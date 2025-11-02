@@ -55,8 +55,9 @@ If it's your first time running the app:
 
 | Script | Purpose |
 |--------|---------|
-| `./run.sh` | 🚀 Start both servers |
+| `./run.sh` | 🚀 Start both servers (with dashboard option) |
 | `./stop.sh` | 🛑 Stop both servers |
+| `./monitor.sh` | 📊 Launch interactive dashboard |
 | `./setup.sh` | 📦 Install all dependencies |
 | `./verify.sh` | ✅ Verify project structure |
 

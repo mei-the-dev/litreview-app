@@ -149,14 +149,37 @@ echo ""
 echo "BACKEND_PID=$BACKEND_PID" > .pids
 echo "FRONTEND_PID=$FRONTEND_PID" >> .pids
 
-# Keep script running and show logs
-echo -e "${BLUE}Press Ctrl+C to view logs in real-time, or just close this terminal${NC}"
-echo -e "${BLUE}Servers will continue running in the background${NC}"
+# Ask user for dashboard preference
+echo -e "${BLUE}═════════════════════════════════════════════${NC}"
+echo -e "${YELLOW}Launch interactive dashboard? (Recommended)${NC}"
+echo -e "${BLUE}═════════════════════════════════════════════${NC}"
+echo ""
+echo -e "  ${GREEN}1)${NC} Yes - Launch colorful dashboard (Rich UI)"
+echo -e "  ${YELLOW}2)${NC} No  - Show plain log output"
+echo ""
+read -p "Choice [1]: " choice
+choice=${choice:-1}
+
 echo ""
 
-# Optional: Tail logs (user can Ctrl+C to exit)
-trap 'echo ""; echo "Servers still running. Use ./stop.sh to stop them."; exit 0' INT
-sleep 2
-echo -e "${BLUE}Showing combined logs (Ctrl+C to exit):${NC}"
-echo ""
-tail -f logs/backend.log logs/frontend.log
+if [ "$choice" = "1" ]; then
+    echo -e "${GREEN}🎨 Launching Dashboard...${NC}"
+    echo ""
+    sleep 1
+    
+    # Install Python rich library if needed
+    if ! python3 -c "import rich" 2>/dev/null; then
+        echo -e "${BLUE}Installing dashboard dependencies...${NC}"
+        python3 -m pip install rich requests -q
+    fi
+    
+    # Launch dashboard
+    python3 dashboard.py
+else
+    echo -e "${BLUE}Showing combined logs (Ctrl+C to exit):${NC}"
+    echo ""
+    
+    # Optional: Tail logs (user can Ctrl+C to exit)
+    trap 'echo ""; echo "Servers still running. Use ./stop.sh to stop them."; exit 0' INT
+    tail -f logs/backend.log logs/frontend.log
+fi

@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = True
     
-    # CORS
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # CORS - will be split from comma-separated string
+    cors_origins: str = "http://localhost:3000,http://localhost:5173"
     
     # External APIs
     hf_token: str | None = None
@@ -22,9 +22,15 @@ class Settings(BaseSettings):
     max_papers_per_query: int = 50
     relevance_threshold: float = 0.5
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_insensitive=True,
+        extra="ignore"
+    )
+    
+    def get_cors_origins_list(self) -> List[str]:
+        """Parse CORS origins from comma-separated string"""
+        return [origin.strip() for origin in self.cors_origins.split(",")]
 
 
 settings = Settings()
