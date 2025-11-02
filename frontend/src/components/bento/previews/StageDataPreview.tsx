@@ -75,7 +75,7 @@ export const StageDataPreview: React.FC<StageDataPreviewProps> = ({ stage, isDar
             {Object.entries(stage.result.themes).slice(0, 3).map(([theme, count]) => (
               <div key={theme} className="flex justify-between items-center">
                 <span className={`text-xs ${textColor} truncate flex-1`}>{theme}</span>
-                <span className={`text-xs font-semibold ${accentColor} ml-2`}>{count}</span>
+                <span className={`text-xs font-semibold ${accentColor} ml-2`}>{String(count)}</span>
               </div>
             ))}
           </div>
@@ -100,7 +100,7 @@ export const StageDataPreview: React.FC<StageDataPreviewProps> = ({ stage, isDar
             {Object.entries(stage.result.methodologies).slice(0, 3).map(([method, count]) => (
               <div key={method} className="flex justify-between items-center">
                 <span className={`text-xs ${textColor} truncate flex-1`}>{method}</span>
-                <span className={`text-xs font-semibold ${accentColor} ml-2`}>{count}</span>
+                <span className={`text-xs font-semibold ${accentColor} ml-2`}>{String(count)}</span>
               </div>
             ))}
           </div>
