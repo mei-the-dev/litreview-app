@@ -1,8 +1,19 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { PipelineStage, LiteratureReviewReport, Paper } from '@/types/pipeline.types';
 
 type ViewMode = 'pipeline' | 'results';
 type ResultTab = 'papers' | 'themes' | 'methodologies' | 'rankings' | 'report' | 'pdf';
+
+interface PipelineHistory {
+  sessionId: string;
+  query: string;
+  timestamp: string;
+  stages: PipelineStage[];
+  report: LiteratureReviewReport | null;
+  pdfPath: string | null;
+  totalDuration?: number;
+}
 
 interface PipelineState {
   sessionId: string | null;
@@ -25,6 +36,10 @@ interface PipelineState {
   filterTheme: string | null;
   filterMethodology: string | null;
   
+  // Pipeline history
+  pipelineHistory: PipelineHistory[];
+  maxHistorySize: number;
+  
   // Actions
   setSessionId: (id: string) => void;
   initializeStages: () => void;
@@ -41,6 +56,9 @@ interface PipelineState {
   setSearchTerm: (term: string) => void;
   setFilterTheme: (theme: string | null) => void;
   setFilterMethodology: (methodology: string | null) => void;
+  archivePipeline: (query: string) => void;
+  loadPipelineFromHistory: (sessionId: string) => void;
+  clearHistory: () => void;
   reset: () => void;
 }
 
@@ -54,89 +72,140 @@ const STAGE_NAMES = [
   'PDF Generation'
 ];
 
-export const usePipelineStore = create<PipelineState>((set) => ({
-  sessionId: null,
-  stages: [],
-  report: null,
-  pdfPath: null,
-  isRunning: false,
-  error: null,
-  
-  // Result data
-  papers: [],
-  themes: {},
-  methodologies: {},
-  rankedPapers: [],
-  
-  // View state
-  currentView: 'pipeline',
-  selectedTab: 'papers',
-  searchTerm: '',
-  filterTheme: null,
-  filterMethodology: null,
-  
-  setSessionId: (id) => set({ sessionId: id, isRunning: true }),
-  
-  initializeStages: () => set({
-    stages: STAGE_NAMES.map((name, index) => ({
-      id: index + 1,
-      name,
-      status: 'pending',
-      progress: 0,
-      message: 'Waiting...',
-    })),
-    currentView: 'pipeline'
-  }),
-  
-  updateStage: (stageId, update) => set((state) => ({
-    stages: state.stages.map((stage) =>
-      stage.id === stageId ? { ...stage, ...update } : stage
-    )
-  })),
-  
-  setReport: (report) => set({ report }),
-  
-  setPdfPath: (path) => {
-    console.log('✅ setPdfPath called with:', path);
-    set({ pdfPath: path, isRunning: false, currentView: 'results' });
-    console.log('✅ Navigation: Switched to results view');
-  },
-  
-  setError: (error) => set({ error, isRunning: false }),
-  
-  setPapers: (papers) => set({ papers }),
-  
-  setThemes: (themes) => set({ themes }),
-  
-  setMethodologies: (methodologies) => set({ methodologies }),
-  
-  setRankedPapers: (rankedPapers) => set({ rankedPapers }),
-  
-  setCurrentView: (currentView) => set({ currentView }),
-  
-  setSelectedTab: (selectedTab) => set({ selectedTab }),
-  
-  setSearchTerm: (searchTerm) => set({ searchTerm }),
-  
-  setFilterTheme: (filterTheme) => set({ filterTheme }),
-  
-  setFilterMethodology: (filterMethodology) => set({ filterMethodology }),
-  
-  reset: () => set({
-    sessionId: null,
-    stages: [],
-    report: null,
-    pdfPath: null,
-    isRunning: false,
-    error: null,
-    papers: [],
-    themes: {},
-    methodologies: {},
-    rankedPapers: [],
-    currentView: 'pipeline',
-    selectedTab: 'papers',
-    searchTerm: '',
-    filterTheme: null,
-    filterMethodology: null,
-  }),
-}));
+export const usePipelineStore = create<PipelineState>()(
+  persist(
+    (set, get) => ({
+      sessionId: null,
+      stages: [],
+      report: null,
+      pdfPath: null,
+      isRunning: false,
+      error: null,
+      
+      // Result data
+      papers: [],
+      themes: {},
+      methodologies: {},
+      rankedPapers: [],
+      
+      // View state
+      currentView: 'pipeline',
+      selectedTab: 'papers',
+      searchTerm: '',
+      filterTheme: null,
+      filterMethodology: null,
+      
+      // Pipeline history
+      pipelineHistory: [],
+      maxHistorySize: 10,
+      
+      setSessionId: (id) => set({ sessionId: id, isRunning: true }),
+      
+      initializeStages: () => set({
+        stages: STAGE_NAMES.map((name, index) => ({
+          id: index + 1,
+          name,
+          status: 'pending',
+          progress: 0,
+          message: 'Waiting...',
+        })),
+        currentView: 'pipeline'
+      }),
+      
+      updateStage: (stageId, update) => set((state) => ({
+        stages: state.stages.map((stage) =>
+          stage.id === stageId ? { ...stage, ...update } : stage
+        )
+      })),
+      
+      setReport: (report) => set({ report }),
+      
+      setPdfPath: (path) => {
+        console.log('✅ setPdfPath called with:', path);
+        set({ pdfPath: path, isRunning: false, currentView: 'results' });
+        console.log('✅ Navigation: Switched to results view');
+      },
+      
+      setError: (error) => set({ error, isRunning: false }),
+      
+      setPapers: (papers) => set({ papers }),
+      
+      setThemes: (themes) => set({ themes }),
+      
+      setMethodologies: (methodologies) => set({ methodologies }),
+      
+      setRankedPapers: (rankedPapers) => set({ rankedPapers }),
+      
+      setCurrentView: (currentView) => set({ currentView }),
+      
+      setSelectedTab: (selectedTab) => set({ selectedTab }),
+      
+      setSearchTerm: (searchTerm) => set({ searchTerm }),
+      
+      setFilterTheme: (filterTheme) => set({ filterTheme }),
+      
+      setFilterMethodology: (filterMethodology) => set({ filterMethodology }),
+      
+      archivePipeline: (query: string) => set((state) => {
+        const history: PipelineHistory = {
+          sessionId: state.sessionId || 'unknown',
+          query,
+          timestamp: new Date().toISOString(),
+          stages: state.stages,
+          report: state.report,
+          pdfPath: state.pdfPath,
+        };
+        
+        const newHistory = [history, ...state.pipelineHistory].slice(0, state.maxHistorySize);
+        
+        console.log('📦 Pipeline archived:', history.sessionId);
+        return { pipelineHistory: newHistory };
+      }),
+      
+      loadPipelineFromHistory: (sessionId: string) => set((state) => {
+        const history = state.pipelineHistory.find(h => h.sessionId === sessionId);
+        if (!history) {
+          console.warn('⚠️  Pipeline not found in history:', sessionId);
+          return {};
+        }
+        
+        console.log('📂 Loading pipeline from history:', sessionId);
+        return {
+          sessionId: history.sessionId,
+          stages: history.stages,
+          report: history.report,
+          pdfPath: history.pdfPath,
+          currentView: 'results',
+          isRunning: false,
+        };
+      }),
+      
+      clearHistory: () => set({ pipelineHistory: [] }),
+      
+      reset: () => set({
+        sessionId: null,
+        stages: [],
+        report: null,
+        pdfPath: null,
+        isRunning: false,
+        error: null,
+        papers: [],
+        themes: {},
+        methodologies: {},
+        rankedPapers: [],
+        currentView: 'pipeline',
+        selectedTab: 'papers',
+        searchTerm: '',
+        filterTheme: null,
+        filterMethodology: null,
+      }),
+    }),
+    {
+      name: 'litreview-pipeline-storage',
+      partialize: (state) => ({
+        pipelineHistory: state.pipelineHistory,
+        maxHistorySize: state.maxHistorySize,
+      }),
+    }
+  )
+);
