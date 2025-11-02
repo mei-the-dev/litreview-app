@@ -2,18 +2,28 @@
 """
 LitReview Dashboard - Real-time monitoring with colorful CLI
 Displays system status, logs, metrics, and errors in a rich terminal UI
+
+Note: Run from project root, will use backend venv if available
 """
 
 import sys
-import time
-import requests
-import json
-from datetime import datetime
 from pathlib import Path
+
+# Try to use backend venv if available
+venv_python = Path("backend/venv/bin/python3")
+if venv_python.exists() and sys.executable != str(venv_python.absolute()):
+    import os
+    import subprocess
+    # Re-run with venv python
+    os.execv(str(venv_python.absolute()), [str(venv_python.absolute())] + sys.argv)
+
+import time
+from datetime import datetime
 from collections import deque
 import threading
 import subprocess
 
+# Try to install dependencies if needed
 try:
     from rich.console import Console
     from rich.layout import Layout
@@ -25,7 +35,7 @@ try:
     from rich import box
     from rich.align import Align
 except ImportError:
-    print("Installing required packages...")
+    print("📦 Installing dashboard dependencies (rich)...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "rich", "-q"])
     from rich.console import Console
     from rich.layout import Layout
@@ -36,6 +46,13 @@ except ImportError:
     from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
     from rich import box
     from rich.align import Align
+
+try:
+    import requests
+except ImportError:
+    print("📦 Installing dashboard dependencies (requests)...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "-q"])
+    import requests
 
 console = Console()
 
