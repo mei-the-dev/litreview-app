@@ -1,0 +1,621 @@
+{
+  "marko_version": "5.2.0",
+  "title": "LitReview - Pipeline Results UX Presentation & Navigation Enhancement",
+  "description": "MARKO specification for improving presentation and navigation of pipeline results in the UI, focusing on better data visualization, result exploration, and user interaction with generated content",
+  
+  "relationship_to_parent_markos": {
+    "parent_marko": "marko.json",
+    "testing_marko": "testing-marko.json",
+    "scope": "Frontend UX enhancements for pipeline results presentation",
+    "integration": "Builds on existing bento grid UI, adds result viewing and navigation capabilities"
+  },
+
+  "problem_statement": {
+    "current_issues": [
+      "Pipeline stages show minimal result information in bento cards",
+      "No way to view detailed paper information after fetching",
+      "Report synthesis and PDF are generated but not easily accessible",
+      "No navigation to explore grouped papers by theme or methodology",
+      "Limited interactivity - users cannot click through results",
+      "No visual representation of paper distribution, themes, or rankings"
+    ],
+    "user_needs": [
+      "View list of papers fetched with metadata",
+      "Explore papers grouped by theme",
+      "Explore papers grouped by methodology",
+      "See ranked papers with scores",
+      "Read the synthesis report",
+      "Download and preview the PDF",
+      "Navigate between different result views smoothly",
+      "See data visualizations (charts, graphs) for distributions"
+    ]
+  },
+
+  "design_goals": {
+    "primary": [
+      "Make pipeline results explorable and interactive",
+      "Maintain glassmorphism aesthetic throughout result views",
+      "Provide smooth transitions between different result sections",
+      "Show rich data visualizations for insights",
+      "Preserve real-time update feel with animations"
+    ],
+    "secondary": [
+      "Allow downloading results in multiple formats",
+      "Provide search/filter capabilities within results",
+      "Show relationships between papers visually",
+      "Export individual sections of the report"
+    ]
+  },
+
+  "architectural_enhancements": {
+    "new_components": [
+      {
+        "name": "ResultsView",
+        "path": "frontend/src/components/results/ResultsView.tsx",
+        "purpose": "Main container for all result views after pipeline completion",
+        "sub_components": [
+          "ResultsNavigation - Tabbed navigation between result sections",
+          "PapersListView - List of all fetched papers",
+          "ThemeView - Papers grouped by theme with charts",
+          "MethodologyView - Papers grouped by methodology with charts",
+          "RankingsView - Top papers ranked with scores",
+          "ReportView - Formatted synthesis report display",
+          "PDFPreview - PDF preview and download"
+        ]
+      },
+      {
+        "name": "PaperCard",
+        "path": "frontend/src/components/results/PaperCard.tsx",
+        "purpose": "Display individual paper with all metadata",
+        "features": [
+          "Glassmorphism design",
+          "Expandable to show full abstract",
+          "Shows relevance score, theme, methodology",
+          "Click to open in new tab (if URL available)",
+          "Citation count badge",
+          "Year and venue display"
+        ]
+      },
+      {
+        "name": "ThemeClusterView",
+        "path": "frontend/src/components/results/ThemeClusterView.tsx",
+        "purpose": "Visual clustering of papers by theme",
+        "features": [
+          "Pie chart showing distribution",
+          "Expandable theme cards",
+          "Papers listed under each theme",
+          "Color-coded themes matching bento cards"
+        ]
+      },
+      {
+        "name": "MethodologyDistribution",
+        "path": "frontend/src/components/results/MethodologyDistribution.tsx",
+        "purpose": "Bar chart and list of papers by methodology",
+        "features": [
+          "Horizontal bar chart",
+          "Click to expand methodology section",
+          "Shows paper count per methodology"
+        ]
+      },
+      {
+        "name": "RankingTable",
+        "path": "frontend/src/components/results/RankingTable.tsx",
+        "purpose": "Sortable table of top papers with scores",
+        "features": [
+          "Shows all scoring factors",
+          "Sortable columns",
+          "Glassmorphism table design",
+          "Highlight top 10 papers"
+        ]
+      },
+      {
+        "name": "ReportDisplay",
+        "path": "frontend/src/components/results/ReportDisplay.tsx",
+        "purpose": "Beautiful formatted display of synthesis report",
+        "features": [
+          "Markdown rendering with syntax highlighting",
+          "Collapsible sections",
+          "Copy sections to clipboard",
+          "Print-friendly view"
+        ]
+      },
+      {
+        "name": "PDFViewer",
+        "path": "frontend/src/components/results/PDFViewer.tsx",
+        "purpose": "Inline PDF preview with download option",
+        "features": [
+          "Embedded PDF viewer (or thumbnail preview)",
+          "Download button with size indicator",
+          "Share link to PDF",
+          "Open in new tab option"
+        ]
+      },
+      {
+        "name": "DataVisualization",
+        "path": "frontend/src/components/results/DataVisualization.tsx",
+        "purpose": "Charts and graphs for data insights",
+        "libraries": ["recharts - lightweight charting library"],
+        "chart_types": [
+          "Pie chart - theme distribution",
+          "Bar chart - methodology distribution",
+          "Line chart - papers over time (by year)",
+          "Scatter plot - citation count vs relevance score"
+        ]
+      }
+    ],
+
+    "state_enhancements": [
+      {
+        "store": "pipelineStore.ts",
+        "new_fields": [
+          "papers: Paper[] - All fetched papers",
+          "themes: Record<string, Paper[]> - Papers grouped by theme",
+          "methodologies: Record<string, Paper[]> - Papers grouped by methodology",
+          "rankedPapers: Paper[] - Sorted by final ranking",
+          "currentView: 'pipeline' | 'results' - Current view mode",
+          "selectedTab: 'papers' | 'themes' | 'methodologies' | 'rankings' | 'report' | 'pdf'",
+          "searchTerm: string - Filter papers by search",
+          "filterTheme: string | null - Filter by selected theme",
+          "filterMethodology: string | null - Filter by methodology"
+        ],
+        "new_actions": [
+          "setPapers(papers: Paper[])",
+          "setThemes(themes: Record<string, Paper[]>)",
+          "setMethodologies(methodologies: Record<string, Paper[]>)",
+          "setRankedPapers(papers: Paper[])",
+          "setCurrentView(view: 'pipeline' | 'results')",
+          "setSelectedTab(tab: string)",
+          "setSearchTerm(term: string)",
+          "setFilterTheme(theme: string | null)",
+          "setFilterMethodology(methodology: string | null)"
+        ]
+      },
+      {
+        "store": "uiStore.ts",
+        "new_fields": [
+          "showResultsModal: boolean - Show results in modal overlay",
+          "expandedPapers: Set<string> - Track expanded paper cards",
+          "sortColumn: string - Current sort column for rankings",
+          "sortDirection: 'asc' | 'desc' - Sort direction"
+        ]
+      }
+    ],
+
+    "routing_navigation": {
+      "approach": "State-based navigation (no router needed for now)",
+      "views": [
+        {
+          "view": "pipeline",
+          "condition": "isRunning || stages.length === 0",
+          "shows": "BentoGrid with real-time pipeline updates"
+        },
+        {
+          "view": "results",
+          "condition": "!isRunning && pdfPath !== null",
+          "shows": "ResultsView with tabbed navigation"
+        }
+      ],
+      "transitions": [
+        "Pipeline completion triggers automatic transition to results view",
+        "User can toggle back to pipeline view to see stage completion times",
+        "Smooth fade transition between views"
+      ]
+    }
+  },
+
+  "websocket_data_flow_enhancements": {
+    "stage_1_complete": {
+      "event": "stage_complete",
+      "stage": 1,
+      "data_structure": {
+        "papers": "Array<Paper>",
+        "papers_count": "number"
+      },
+      "action": "Store papers in pipelineStore.papers"
+    },
+    "stage_3_complete": {
+      "event": "stage_complete",
+      "stage": 3,
+      "data_structure": {
+        "themes": "Record<string, Paper[]>",
+        "themes_found": "number"
+      },
+      "action": "Store themes in pipelineStore.themes"
+    },
+    "stage_4_complete": {
+      "event": "stage_complete",
+      "stage": 4,
+      "data_structure": {
+        "methodologies": "Record<string, Paper[]>",
+        "methodologies_found": "number"
+      },
+      "action": "Store methodologies in pipelineStore.methodologies"
+    },
+    "stage_5_complete": {
+      "event": "stage_complete",
+      "stage": 5,
+      "data_structure": {
+        "ranked_papers": "Array<Paper>",
+        "papers_ranked": "number"
+      },
+      "action": "Store ranked papers in pipelineStore.rankedPapers"
+    },
+    "stage_6_complete": {
+      "event": "stage_complete",
+      "stage": 6,
+      "data_structure": {
+        "report": "LiteratureReviewReport"
+      },
+      "action": "Store report in pipelineStore.report"
+    },
+    "stage_7_complete": {
+      "event": "stage_complete",
+      "stage": 7,
+      "data_structure": {
+        "pdf_path": "string"
+      },
+      "action": "Store PDF path, trigger view transition"
+    }
+  },
+
+  "ui_ux_specifications": {
+    "results_navigation_tabs": {
+      "design": "Horizontal scrollable tabs with glassmorphism",
+      "tabs": [
+        {
+          "id": "papers",
+          "label": "All Papers",
+          "icon": "FileText",
+          "badge": "papers.length"
+        },
+        {
+          "id": "themes",
+          "label": "By Theme",
+          "icon": "Network",
+          "badge": "Object.keys(themes).length"
+        },
+        {
+          "id": "methodologies",
+          "label": "By Methodology",
+          "icon": "Microscope",
+          "badge": "Object.keys(methodologies).length"
+        },
+        {
+          "id": "rankings",
+          "label": "Rankings",
+          "icon": "TrendingUp",
+          "badge": "Top 10"
+        },
+        {
+          "id": "report",
+          "label": "Report",
+          "icon": "FileText"
+        },
+        {
+          "id": "pdf",
+          "label": "PDF",
+          "icon": "FileCheck"
+        }
+      ],
+      "behavior": "Active tab highlighted, smooth underline animation"
+    },
+
+    "papers_list_view": {
+      "layout": "Grid of paper cards (2-3 columns responsive)",
+      "sorting": ["relevance", "citations", "year", "title"],
+      "filtering": ["search by title/abstract", "by theme", "by methodology"],
+      "pagination": "Virtual scrolling for performance",
+      "card_interactions": [
+        "Click to expand/collapse abstract",
+        "Click title to open paper URL",
+        "Hover shows quick stats tooltip"
+      ]
+    },
+
+    "theme_view": {
+      "layout": "Two-panel: chart on left, theme cards on right",
+      "chart": "Pie chart with interactive segments",
+      "theme_cards": "Expandable accordion style",
+      "interaction": "Click pie segment to filter theme cards"
+    },
+
+    "methodology_view": {
+      "layout": "Bar chart at top, cards below",
+      "chart": "Horizontal bar chart",
+      "methodology_cards": "Similar to theme cards",
+      "interaction": "Click bar to expand methodology section"
+    },
+
+    "rankings_view": {
+      "layout": "Table with sticky header",
+      "columns": [
+        "Rank",
+        "Title",
+        "Relevance Score",
+        "Citations",
+        "Year",
+        "Theme",
+        "Methodology"
+      ],
+      "highlighting": "Top 3 papers with gold/silver/bronze accents",
+      "sorting": "Click column headers to sort"
+    },
+
+    "report_view": {
+      "layout": "Centered content column with max-width",
+      "styling": "Academic paper aesthetic with glassmorphism",
+      "features": [
+        "Table of contents with scroll-to-section",
+        "Collapsible sections",
+        "Copy button for each section",
+        "Export as Markdown button"
+      ]
+    },
+
+    "pdf_view": {
+      "layout": "Centered preview with controls",
+      "features": [
+        "Thumbnail preview or embedded viewer",
+        "Download button with file size",
+        "Open in new tab button",
+        "Share link button (if hosted)"
+      ]
+    },
+
+    "animations": {
+      "view_transitions": "Fade in/out with slide up (500ms)",
+      "tab_switching": "Fade content, slide active indicator (300ms)",
+      "card_expansions": "Smooth height animation (400ms)",
+      "chart_rendering": "Animated drawing (800ms stagger)",
+      "list_rendering": "Staggered fade-in (50ms per item)"
+    },
+
+    "responsive_design": {
+      "mobile": "Single column, collapsible sections, bottom sheet for filters",
+      "tablet": "Two columns where applicable, side drawer for navigation",
+      "desktop": "Multi-column layouts, fixed navigation"
+    }
+  },
+
+  "dependencies": {
+    "new_packages": [
+      {
+        "name": "recharts",
+        "version": "^2.10.0",
+        "purpose": "Charts and data visualization",
+        "alternatives": ["chart.js", "visx"],
+        "reason": "Simple API, React-first, good TypeScript support"
+      },
+      {
+        "name": "react-markdown",
+        "version": "^9.0.1",
+        "purpose": "Render markdown in report view",
+        "dependencies": ["remark-gfm - GitHub Flavored Markdown"]
+      },
+      {
+        "name": "react-syntax-highlighter",
+        "version": "^15.5.0",
+        "purpose": "Code syntax highlighting in markdown",
+        "optional": true
+      }
+    ],
+    "install_command": "cd frontend && npm install recharts react-markdown remark-gfm"
+  },
+
+  "implementation_plan": {
+    "phase_1_data_flow": {
+      "tasks": [
+        "Update useWebSocket hook to capture and store stage results",
+        "Enhance pipelineStore with new fields and actions",
+        "Update backend stage completions to include full data payloads",
+        "Test WebSocket data flow with console logs"
+      ],
+      "estimated_time": "30 minutes"
+    },
+
+    "phase_2_navigation": {
+      "tasks": [
+        "Create ResultsView container component",
+        "Create ResultsNavigation tab component",
+        "Implement view switching logic in App.tsx",
+        "Add smooth transitions between views",
+        "Test navigation flow"
+      ],
+      "estimated_time": "45 minutes"
+    },
+
+    "phase_3_papers_view": {
+      "tasks": [
+        "Create PaperCard component",
+        "Create PapersListView with grid layout",
+        "Add search and filter controls",
+        "Implement virtual scrolling (if needed)",
+        "Test with sample data"
+      ],
+      "estimated_time": "1 hour"
+    },
+
+    "phase_4_visualizations": {
+      "tasks": [
+        "Install recharts",
+        "Create ThemeClusterView with pie chart",
+        "Create MethodologyDistribution with bar chart",
+        "Add interactive chart behaviors",
+        "Style charts with glassmorphism"
+      ],
+      "estimated_time": "1 hour"
+    },
+
+    "phase_5_rankings": {
+      "tasks": [
+        "Create RankingTable component",
+        "Implement sortable columns",
+        "Add top-3 highlighting",
+        "Style table with glassmorphism",
+        "Test sorting functionality"
+      ],
+      "estimated_time": "45 minutes"
+    },
+
+    "phase_6_report_pdf": {
+      "tasks": [
+        "Create ReportDisplay with react-markdown",
+        "Add table of contents navigation",
+        "Create PDFViewer component",
+        "Add download and share functionality",
+        "Test with generated content"
+      ],
+      "estimated_time": "1 hour"
+    },
+
+    "phase_7_polish": {
+      "tasks": [
+        "Refine animations and transitions",
+        "Ensure responsive design on all screens",
+        "Add loading states and error handling",
+        "Accessibility improvements (ARIA labels, keyboard nav)",
+        "Performance optimization (memoization, lazy loading)"
+      ],
+      "estimated_time": "1 hour"
+    },
+
+    "total_estimated_time": "6 hours"
+  },
+
+  "testing_strategy": {
+    "reference": "testing-marko.json",
+    "test_categories": [
+      {
+        "category": "component_tests",
+        "files": [
+          "frontend/src/components/results/__tests__/PaperCard.test.tsx",
+          "frontend/src/components/results/__tests__/ThemeClusterView.test.tsx",
+          "frontend/src/components/results/__tests__/RankingTable.test.tsx"
+        ],
+        "approach": "React Testing Library with mock data"
+      },
+      {
+        "category": "integration_tests",
+        "files": [
+          "frontend/src/components/results/__tests__/ResultsView.integration.test.tsx"
+        ],
+        "tests": [
+          "test_results_view_renders_all_tabs",
+          "test_tab_navigation_switches_content",
+          "test_search_filters_papers",
+          "test_chart_interaction_filters_data"
+        ]
+      },
+      {
+        "category": "e2e_tests",
+        "files": [
+          "backend/tests/test_e2e_ux_flow.py"
+        ],
+        "tests": [
+          "test_complete_pipeline_to_results_navigation",
+          "test_user_can_view_all_result_sections",
+          "test_user_can_download_pdf",
+          "test_user_can_search_and_filter_papers"
+        ],
+        "approach": "Selenium/Playwright to simulate user interactions"
+      },
+      {
+        "category": "visual_regression",
+        "tests": [
+          "test_results_view_matches_snapshot",
+          "test_charts_render_correctly",
+          "test_responsive_layouts"
+        ],
+        "optional": true
+      }
+    ],
+
+    "test_data": {
+      "fixtures": [
+        {
+          "file": "frontend/src/__tests__/fixtures/samplePapers.json",
+          "description": "20 sample papers with all fields populated"
+        },
+        {
+          "file": "frontend/src/__tests__/fixtures/sampleThemes.json",
+          "description": "Papers grouped into 5 themes"
+        },
+        {
+          "file": "frontend/src/__tests__/fixtures/sampleReport.json",
+          "description": "Complete report structure"
+        }
+      ]
+    },
+
+    "quality_gates": [
+      "All components must have >80% test coverage",
+      "No console errors in development or production builds",
+      "All animations run at 60fps",
+      "Load time for results view < 500ms",
+      "Search/filter response time < 100ms"
+    ]
+  },
+
+  "accessibility_requirements": {
+    "wcag_level": "AA",
+    "requirements": [
+      "All interactive elements keyboard accessible",
+      "Tab navigation follows logical order",
+      "ARIA labels on all icons and charts",
+      "Color contrast meets 4.5:1 minimum",
+      "Focus indicators visible on all elements",
+      "Screen reader announcements for state changes",
+      "Alt text on all visual elements"
+    ]
+  },
+
+  "performance_optimizations": {
+    "strategies": [
+      "React.memo for expensive components (PaperCard, charts)",
+      "useMemo for computed values (filtered/sorted lists)",
+      "useCallback for event handlers passed as props",
+      "Virtual scrolling for large paper lists (>50 papers)",
+      "Lazy loading for PDF preview",
+      "Code splitting for result components",
+      "Debounce search input (300ms)"
+    ]
+  },
+
+  "future_enhancements": {
+    "planned": [
+      "Export results to CSV/JSON",
+      "Save/load result sessions",
+      "Compare multiple literature reviews side-by-side",
+      "Annotation and note-taking on papers",
+      "Share results via unique URL",
+      "Collaborative features (comments, highlights)",
+      "Integration with reference managers (Zotero, Mendeley)",
+      "Natural language queries on results ('Show me papers about X')"
+    ]
+  },
+
+  "success_criteria": {
+    "functional": [
+      "Users can view all pipeline results in organized sections",
+      "Navigation between sections is smooth and intuitive",
+      "Charts accurately represent data distributions",
+      "Search and filtering work correctly",
+      "PDF can be downloaded successfully",
+      "All data from backend is properly displayed"
+    ],
+    "ux": [
+      "Maintains glassmorphism aesthetic throughout",
+      "Animations are smooth and purposeful",
+      "Information hierarchy is clear",
+      "No overwhelming or cluttered layouts",
+      "Users can easily find what they're looking for"
+    ],
+    "technical": [
+      "No performance regressions",
+      "All tests pass (unit, integration, e2e)",
+      "No console errors or warnings",
+      "Code is well-documented and maintainable",
+      "TypeScript types are accurate and complete"
+    ]
+  }
+}

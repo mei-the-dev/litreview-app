@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { usePipelineStore } from '@/stores/pipelineStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -6,9 +7,10 @@ import { Header } from '@/components/Header';
 import { QueryInput } from '@/components/QueryInput';
 import { BentoGrid } from '@/components/bento/BentoGrid';
 import { StatsFooter } from '@/components/StatsFooter';
+import { ResultsView } from '@/components/results/ResultsView';
 
 function App() {
-  const { sessionId } = usePipelineStore();
+  const { sessionId, currentView } = usePipelineStore();
   const { isDarkMode } = useUIStore();
   
   // Connect to WebSocket when session starts
@@ -50,13 +52,19 @@ function App() {
       <div className="max-w-7xl mx-auto relative z-10">
         <Header />
         
-        <QueryInput />
+        {currentView === 'pipeline' && <QueryInput />}
         
         <div className="mt-8">
-          <BentoGrid />
+          <AnimatePresence mode="wait">
+            {currentView === 'pipeline' ? (
+              <BentoGrid key="pipeline" />
+            ) : (
+              <ResultsView key="results" />
+            )}
+          </AnimatePresence>
         </div>
         
-        <StatsFooter />
+        {currentView === 'pipeline' && <StatsFooter />}
       </div>
     </div>
   );

@@ -7,7 +7,16 @@ const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
 export const useWebSocket = (sessionId: string | null) => {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
-  const { updateStage, setReport, setPdfPath, setError } = usePipelineStore();
+  const { 
+    updateStage, 
+    setReport, 
+    setPdfPath, 
+    setError,
+    setPapers,
+    setThemes,
+    setMethodologies,
+    setRankedPapers
+  } = usePipelineStore();
   
   const handleMessage = useCallback((event: MessageEvent) => {
     const update: StageUpdate = JSON.parse(event.data);
@@ -40,15 +49,41 @@ export const useWebSocket = (sessionId: string | null) => {
             endTime: Date.now(),
           });
           
-          // Check for special stage completions
-          if (update.stage === 6 && update.result?.report_generated) {
-            // Stage 6 complete - report is ready
+          // Store stage-specific data
+          if (update.stage === 1 && update.data?.papers) {
+            // Stage 1: Papers fetched
+            setPapers(update.data.papers);
+            console.log('Stored papers:', update.data.papers.length);
+          }
+          
+          if (update.stage === 3 && update.data?.themes) {
+            // Stage 3: Themes clustered
+            setThemes(update.data.themes);
+            console.log('Stored themes:', Object.keys(update.data.themes).length);
+          }
+          
+          if (update.stage === 4 && update.data?.methodologies) {
+            // Stage 4: Methodologies grouped
+            setMethodologies(update.data.methodologies);
+            console.log('Stored methodologies:', Object.keys(update.data.methodologies).length);
+          }
+          
+          if (update.stage === 5 && update.data?.ranked_papers) {
+            // Stage 5: Papers ranked
+            setRankedPapers(update.data.ranked_papers);
+            console.log('Stored ranked papers:', update.data.ranked_papers.length);
+          }
+          
+          if (update.stage === 6 && update.data?.report) {
+            // Stage 6: Report generated
+            setReport(update.data.report);
             console.log('Report generated');
           }
           
           if (update.stage === 7 && update.result?.pdf_path) {
-            // Stage 7 complete - PDF is ready
+            // Stage 7: PDF generated
             setPdfPath(update.result.pdf_path);
+            console.log('PDF generated:', update.result.pdf_path);
           }
         }
         break;
@@ -64,7 +99,7 @@ export const useWebSocket = (sessionId: string | null) => {
         }
         break;
     }
-  }, [updateStage, setReport, setPdfPath, setError]);
+  }, [updateStage, setReport, setPdfPath, setError, setPapers, setThemes, setMethodologies, setRankedPapers]);
   
   const connect = useCallback(() => {
     if (!sessionId || wsRef.current?.readyState === WebSocket.OPEN) {

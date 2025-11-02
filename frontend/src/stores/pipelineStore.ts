@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import { PipelineStage, LiteratureReviewReport } from '@/types/pipeline.types';
+import { PipelineStage, LiteratureReviewReport, Paper } from '@/types/pipeline.types';
+
+type ViewMode = 'pipeline' | 'results';
+type ResultTab = 'papers' | 'themes' | 'methodologies' | 'rankings' | 'report' | 'pdf';
 
 interface PipelineState {
   sessionId: string | null;
@@ -9,6 +12,19 @@ interface PipelineState {
   isRunning: boolean;
   error: string | null;
   
+  // Result data
+  papers: Paper[];
+  themes: Record<string, Paper[]>;
+  methodologies: Record<string, Paper[]>;
+  rankedPapers: Paper[];
+  
+  // View state
+  currentView: ViewMode;
+  selectedTab: ResultTab;
+  searchTerm: string;
+  filterTheme: string | null;
+  filterMethodology: string | null;
+  
   // Actions
   setSessionId: (id: string) => void;
   initializeStages: () => void;
@@ -16,6 +32,15 @@ interface PipelineState {
   setReport: (report: LiteratureReviewReport) => void;
   setPdfPath: (path: string) => void;
   setError: (error: string) => void;
+  setPapers: (papers: Paper[]) => void;
+  setThemes: (themes: Record<string, Paper[]>) => void;
+  setMethodologies: (methodologies: Record<string, Paper[]>) => void;
+  setRankedPapers: (papers: Paper[]) => void;
+  setCurrentView: (view: ViewMode) => void;
+  setSelectedTab: (tab: ResultTab) => void;
+  setSearchTerm: (term: string) => void;
+  setFilterTheme: (theme: string | null) => void;
+  setFilterMethodology: (methodology: string | null) => void;
   reset: () => void;
 }
 
@@ -37,6 +62,19 @@ export const usePipelineStore = create<PipelineState>((set) => ({
   isRunning: false,
   error: null,
   
+  // Result data
+  papers: [],
+  themes: {},
+  methodologies: {},
+  rankedPapers: [],
+  
+  // View state
+  currentView: 'pipeline',
+  selectedTab: 'papers',
+  searchTerm: '',
+  filterTheme: null,
+  filterMethodology: null,
+  
   setSessionId: (id) => set({ sessionId: id, isRunning: true }),
   
   initializeStages: () => set({
@@ -46,7 +84,8 @@ export const usePipelineStore = create<PipelineState>((set) => ({
       status: 'pending',
       progress: 0,
       message: 'Waiting...',
-    }))
+    })),
+    currentView: 'pipeline'
   }),
   
   updateStage: (stageId, update) => set((state) => ({
@@ -57,9 +96,27 @@ export const usePipelineStore = create<PipelineState>((set) => ({
   
   setReport: (report) => set({ report }),
   
-  setPdfPath: (path) => set({ pdfPath, isRunning: false }),
+  setPdfPath: (path) => set({ pdfPath, isRunning: false, currentView: 'results' }),
   
   setError: (error) => set({ error, isRunning: false }),
+  
+  setPapers: (papers) => set({ papers }),
+  
+  setThemes: (themes) => set({ themes }),
+  
+  setMethodologies: (methodologies) => set({ methodologies }),
+  
+  setRankedPapers: (rankedPapers) => set({ rankedPapers }),
+  
+  setCurrentView: (currentView) => set({ currentView }),
+  
+  setSelectedTab: (selectedTab) => set({ selectedTab }),
+  
+  setSearchTerm: (searchTerm) => set({ searchTerm }),
+  
+  setFilterTheme: (filterTheme) => set({ filterTheme }),
+  
+  setFilterMethodology: (filterMethodology) => set({ filterMethodology }),
   
   reset: () => set({
     sessionId: null,
@@ -68,5 +125,14 @@ export const usePipelineStore = create<PipelineState>((set) => ({
     pdfPath: null,
     isRunning: false,
     error: null,
+    papers: [],
+    themes: {},
+    methodologies: {},
+    rankedPapers: [],
+    currentView: 'pipeline',
+    selectedTab: 'papers',
+    searchTerm: '',
+    filterTheme: null,
+    filterMethodology: null,
   }),
 }));
