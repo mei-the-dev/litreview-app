@@ -76,15 +76,30 @@ async def get_pipeline_result(session_id: str):
 
 @router.get("/events/{session_id}")
 async def get_pipeline_events(session_id: str, limit: int = 100):
-    """Get recent pipeline events for debugging"""
+    """Get recent pipeline events for a specific session"""
+    from backend.infrastructure.event_logger import event_logger
     from backend.core.websocket_manager import manager
-    events = manager.get_recent_events(session_id=session_id, limit=limit)
-    return {"session_id": session_id, "events": events, "count": len(events)}
+    
+    # Get from both event logger (file-based) and websocket manager (memory)
+    file_events = event_logger.get_session_events(session_id, limit=limit)
+    ws_events = manager.get_recent_events(session_id=session_id, limit=limit)
+    
+    # Combine and deduplicate by timestamp
+    all_events = {}
+    for event in file_events + ws_events:
+        ts = event.get("timestamp")
+        if ts and ts not in all_events:
+            all_events[ts] = event
+    
+    # Sort by timestamp and limit
+    sorted_events = sorted(all_events.values(), key=lambda x: x.get("timestamp", ""))[-limit:]
+    
+    return {"session_id": session_id, "events": sorted_events, "count": len(sorted_events)}
 
 
 @router.get("/events")
 async def get_all_events(limit: int = 100):
-    """Get all recent pipeline events"""
-    from backend.core.websocket_manager import manager
-    events = manager.get_recent_events(limit=limit)
+    """Get all recent pipeline events across all sessions"""
+    from backend.infrastructure.event_logger import event_logger
+    events = event_logger.get_recent_events(limit=limit)
     return {"events": events, "count": len(events)}

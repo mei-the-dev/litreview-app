@@ -98,6 +98,10 @@ class ConnectionManager:
             "data": data or {},
             "timestamp": datetime.utcnow().isoformat()
         })
+        
+        # Also log to event logger for persistence
+        from backend.infrastructure.event_logger import event_logger
+        event_logger.log_stage_progress(session_id, stage, progress, message, data)
     
     async def send_stage_complete(self, session_id: str, stage: int, result: dict, data: dict = None):
         """Send pipeline stage completion"""

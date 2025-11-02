@@ -8,6 +8,8 @@ export const useWebSocket = (sessionId: string | null) => {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | undefined>();
   const pollingIntervalRef = useRef<number | undefined>();
+  const queryRef = useRef<string>(''); // Store query for archiving
+  
   const { 
     updateStage, 
     setReport, 
@@ -17,6 +19,7 @@ export const useWebSocket = (sessionId: string | null) => {
     setThemes,
     setMethodologies,
     setRankedPapers,
+    archivePipeline,
     isRunning
   } = usePipelineStore();
   
@@ -83,8 +86,13 @@ export const useWebSocket = (sessionId: string | null) => {
           }
           
           if (update.stage === 7 && update.result?.pdf_path) {
-            // Stage 7: PDF generated
+            // Stage 7: PDF generated - Pipeline complete!
             console.log('🎉 Stage 7 complete! PDF path:', update.result.pdf_path);
+            
+            // Archive this pipeline run for history
+            archivePipeline(queryRef.current || 'Unknown query');
+            console.log('📦 Pipeline archived to history');
+            
             setPdfPath(update.result.pdf_path);
             console.log('📍 setPdfPath called - should navigate to results');
           }
@@ -102,7 +110,7 @@ export const useWebSocket = (sessionId: string | null) => {
         }
         break;
     }
-  }, [updateStage, setReport, setPdfPath, setError, setPapers, setThemes, setMethodologies, setRankedPapers]);
+  }, [updateStage, setReport, setPdfPath, setError, setPapers, setThemes, setMethodologies, setRankedPapers, archivePipeline]);
   
   // Polling fallback to check pipeline status
   const startPolling = useCallback((sid: string) => {
@@ -131,6 +139,10 @@ export const useWebSocket = (sessionId: string | null) => {
               }
             }
             
+            // Archive pipeline
+            archivePipeline(queryRef.current || 'Unknown query');
+            console.log('📦 Pipeline archived to history (polling)');
+            
             // Navigate to results
             if (pdf_path) {
               console.log('🎯 Navigating to results with PDF:', pdf_path);
@@ -157,11 +169,16 @@ export const useWebSocket = (sessionId: string | null) => {
         console.error('Polling error:', error);
       }
     }, 5000); // Poll every 5 seconds
-  }, [setReport, setPdfPath, setError, setRankedPapers]);
+  }, [setReport, setPdfPath, setError, setRankedPapers, archivePipeline]);
   
-  const connect = useCallback(() => {
+  const connect = useCallback((query?: string) => {
     if (!sessionId || wsRef.current?.readyState === WebSocket.OPEN) {
       return;
+    }
+    
+    // Store query for later archiving
+    if (query) {
+      queryRef.current = query;
     }
     
     const ws = new WebSocket(`${WS_BASE_URL}/ws/${sessionId}`);

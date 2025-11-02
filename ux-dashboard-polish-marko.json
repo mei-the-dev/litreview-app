@@ -1,0 +1,706 @@
+{
+  "marko_version": "5.0.0",
+  "marko_type": "feature_enhancement",
+  "created": "2025-11-02T23:29:00Z",
+  "title": "UX Dashboard & Pipeline Results Presentation Polish",
+  "description": "Comprehensive enhancement of dashboard monitoring and pipeline results presentation in the Bento UI. Fix pipeline events/stages not updating in dashboard, improve UX design by using pipeline details to better populate and persist pipeline steps, and create interpretable data state visualization for each stage in the bento grid.",
+  
+  "problem_statement": {
+    "issues": [
+      {
+        "id": 1,
+        "severity": "high",
+        "title": "Pipeline stages not updating in dashboard",
+        "description": "Dashboard's pipeline stages panel shows static content, doesn't reflect real-time pipeline execution from WebSocket events",
+        "affected_files": ["dashboard.py"],
+        "evidence": "Dashboard has event watching logic but not properly syncing with WebSocket events from backend API"
+      },
+      {
+        "id": 2,
+        "severity": "high", 
+        "title": "Pipeline events not showing in dashboard",
+        "description": "Pipeline events panel exists but events aren't being logged to pipeline_events.log properly during execution",
+        "affected_files": ["backend/api/routes.py", "backend/infrastructure/pipeline_executor.py"],
+        "evidence": "Only test events exist in pipeline_events.log, no real pipeline execution events"
+      },
+      {
+        "id": 3,
+        "severity": "medium",
+        "title": "Frontend Bento Grid doesn't persist completed stages",
+        "description": "Completed pipeline stages disappear or reset, no way to review past results in the UI",
+        "affected_files": ["frontend/src/stores/pipelineStore.ts", "frontend/src/components/bento/StageBentoCard.tsx"],
+        "evidence": "Store resets after completion, no persistence mechanism"
+      },
+      {
+        "id": 4,
+        "severity": "medium",
+        "title": "Limited data state visualization in Bento cards",
+        "description": "Each stage card doesn't effectively communicate the data state/output at that pipeline point for better interpretability",
+        "affected_files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+        "evidence": "Cards show generic progress/status but lack rich data previews (paper counts, theme names, methodology classifications, etc.)"
+      },
+      {
+        "id": 5,
+        "severity": "low",
+        "title": "Results view doesn't integrate with pipeline history",
+        "description": "Results view is disconnected from the pipeline execution history shown in Bento grid",
+        "affected_files": ["frontend/src/components/results/ResultsView.tsx", "frontend/src/stores/pipelineStore.ts"],
+        "evidence": "No visual connection or transition showing how pipeline stages led to final results"
+      }
+    ],
+    "root_causes": [
+      "Backend doesn't emit structured pipeline events to log file during execution",
+      "Dashboard watches log file but WebSocket events aren't being written there",
+      "Frontend doesn't maintain stage history after pipeline completion",
+      "Stage cards have minimal result preview logic",
+      "No persistent state management for completed pipelines"
+    ]
+  },
+  
+  "solution_architecture": {
+    "approach": "Event-driven architecture with dual logging (WebSocket + file) and persistent state management",
+    "principles": [
+      "Single source of truth: Backend emits events via WebSocket AND writes to log",
+      "Persistent visualization: Frontend maintains completed stage states",
+      "Progressive disclosure: Show data previews that expand on interaction",
+      "Smooth transitions: Pipeline view should gracefully transition to results view",
+      "Interpretability: Each stage clearly shows input→process→output"
+    ],
+    "components": [
+      {
+        "name": "Backend Event Logger",
+        "purpose": "Emit and persist all pipeline events",
+        "changes": [
+          "Add event logging service that writes to pipeline_events.log",
+          "Inject logger into pipeline executor",
+          "Log events for every stage transition, progress update, and completion",
+          "Include rich metadata (counts, names, sample data) in events"
+        ]
+      },
+      {
+        "name": "Dashboard Pipeline Monitor",
+        "purpose": "Real-time visualization of pipeline execution",
+        "changes": [
+          "Keep existing log file watching (already working)",
+          "Add API polling fallback for active pipelines",
+          "Improve visual feedback for stage transitions",
+          "Add detailed event timeline with filterable views"
+        ]
+      },
+      {
+        "name": "Frontend Stage Persistence",
+        "purpose": "Maintain stage history after completion",
+        "changes": [
+          "Add stage history array to store (not just current stages)",
+          "Don't reset stages on completion, mark them as 'archived'",
+          "Add ability to view past pipeline runs",
+          "Store completed pipelines in localStorage for persistence across sessions"
+        ]
+      },
+      {
+        "name": "Enhanced Stage Cards",
+        "purpose": "Rich data state visualization",
+        "changes": [
+          "Add expandable result previews for each stage",
+          "Show stage-specific metrics (papers fetched, themes found, etc.)",
+          "Add mini-visualizations (charts, word clouds) for data preview",
+          "Implement stage detail modal with full data exploration",
+          "Add export/download buttons for stage outputs"
+        ]
+      },
+      {
+        "name": "Pipeline → Results Transition",
+        "purpose": "Smooth navigation from pipeline to results",
+        "changes": [
+          "Add animated transition between views",
+          "Keep pipeline summary visible in results view sidebar",
+          "Add breadcrumb navigation",
+          "Show which stage produced each result section"
+        ]
+      }
+    ]
+  },
+  
+  "implementation_plan": {
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Backend Event Logging Infrastructure",
+        "priority": "critical",
+        "duration_estimate": "1 iteration",
+        "tasks": [
+          {
+            "task_id": "1.1",
+            "description": "Create PipelineEventLogger service class",
+            "files": ["backend/infrastructure/event_logger.py"],
+            "implementation": [
+              "Create EventLogger class with methods: log_stage_start, log_stage_progress, log_stage_complete, log_stage_error",
+              "Each method writes JSON line to logs/pipeline_events.log",
+              "Include timestamp, session_id, stage_id, type, message, progress, and data payload",
+              "Use thread-safe file writing",
+              "Add log rotation support"
+            ],
+            "tests": ["Test event writing", "Test concurrent logging", "Test log rotation"]
+          },
+          {
+            "task_id": "1.2",
+            "description": "Integrate EventLogger into PipelineExecutor",
+            "files": ["backend/infrastructure/pipeline_executor.py"],
+            "implementation": [
+              "Inject EventLogger instance into executor",
+              "Add logging calls at each stage: before start, during progress, after completion",
+              "Include rich metadata in events (paper counts, theme names, etc.)",
+              "Ensure errors are logged with full context"
+            ],
+            "tests": ["Test event emission during pipeline", "Verify event data completeness"]
+          },
+          {
+            "task_id": "1.3",
+            "description": "Add pipeline events endpoint to API",
+            "files": ["backend/api/routes.py"],
+            "implementation": [
+              "Add GET /api/pipeline/{session_id}/events endpoint",
+              "Return recent events for a session from log file",
+              "Add pagination support",
+              "Cache parsed events in memory for performance"
+            ],
+            "tests": ["Test endpoint returns correct events", "Test pagination"]
+          }
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Dashboard Pipeline Monitoring Enhancement",
+        "priority": "high",
+        "duration_estimate": "1 iteration",
+        "tasks": [
+          {
+            "task_id": "2.1",
+            "description": "Enhance dashboard event parsing",
+            "files": ["dashboard.py"],
+            "implementation": [
+              "Improve JSON parsing error handling",
+              "Add event type validation",
+              "Track cumulative stage statistics",
+              "Add event filtering (by stage, by type)"
+            ],
+            "tests": ["Test malformed event handling", "Test event filtering"]
+          },
+          {
+            "task_id": "2.2",
+            "description": "Improve pipeline status visualization",
+            "files": ["dashboard.py"],
+            "implementation": [
+              "Add stage duration tracking",
+              "Show estimated time remaining",
+              "Add visual indicators for bottlenecks",
+              "Improve progress bar styling with gradients",
+              "Add stage transition animations (terminal UI)"
+            ],
+            "tests": ["Visual inspection of dashboard"]
+          },
+          {
+            "task_id": "2.3",
+            "description": "Add detailed event timeline view",
+            "files": ["dashboard.py"],
+            "implementation": [
+              "Create dedicated timeline panel",
+              "Group events by stage",
+              "Add color coding by event type",
+              "Show event timestamps and durations",
+              "Add search/filter functionality"
+            ],
+            "tests": ["Test timeline rendering", "Test filtering"]
+          }
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Frontend Stage Persistence & History",
+        "priority": "high",
+        "duration_estimate": "2 iterations",
+        "tasks": [
+          {
+            "task_id": "3.1",
+            "description": "Add stage history to pipelineStore",
+            "files": ["frontend/src/stores/pipelineStore.ts"],
+            "implementation": [
+              "Add pipelineHistory array to store completed runs",
+              "Each history entry contains: sessionId, query, timestamp, stages, report, pdfPath",
+              "Add archivePipeline() action called on completion",
+              "Add loadPipelineHistory() to restore from localStorage",
+              "Don't reset current stages on completion, transition them to 'archived' state"
+            ],
+            "tests": ["Test history storage", "Test localStorage persistence", "Test history loading"]
+          },
+          {
+            "task_id": "3.2",
+            "description": "Add pipeline history UI component",
+            "files": ["frontend/src/components/PipelineHistory.tsx"],
+            "implementation": [
+              "Create sidebar or dropdown showing past pipeline runs",
+              "Show query, timestamp, and status for each",
+              "Click to load historical results",
+              "Add delete/clear history buttons",
+              "Show storage usage"
+            ],
+            "tests": ["Test history list rendering", "Test loading historical run"]
+          },
+          {
+            "task_id": "3.3",
+            "description": "Prevent stage reset on completion",
+            "files": ["frontend/src/hooks/useWebSocket.ts", "frontend/src/stores/pipelineStore.ts"],
+            "implementation": [
+              "Don't call reset() after pipeline completion",
+              "Instead call archivePipeline() and set isArchived flag",
+              "Maintain all stage data for viewing",
+              "Show 'View Results' button instead of resetting"
+            ],
+            "tests": ["Test stages persist after completion", "Test archived state"]
+          }
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Enhanced Stage Card Visualization",
+        "priority": "high",
+        "duration_estimate": "2 iterations",
+        "tasks": [
+          {
+            "task_id": "4.1",
+            "description": "Add rich result previews to stage cards",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Stage 1 (Fetch): Show paper count, top sources, year distribution",
+              "Stage 2 (Relevance): Show score distribution, top/bottom papers",
+              "Stage 3 (Themes): Show theme names with counts, visual theme clusters",
+              "Stage 4 (Methodology): Show methodology types with counts",
+              "Stage 5 (Ranking): Show top 5 papers with scores",
+              "Stage 6 (Synthesis): Show report preview, word count, key findings",
+              "Stage 7 (PDF): Show file size, page count, download button",
+              "All previews collapsible/expandable"
+            ],
+            "tests": ["Test preview rendering for each stage", "Test expand/collapse"]
+          },
+          {
+            "task_id": "4.2",
+            "description": "Add stage detail modal",
+            "files": ["frontend/src/components/bento/StageDetailModal.tsx"],
+            "implementation": [
+              "Click stage card to open detailed modal",
+              "Show full stage data with tabs (Input, Process, Output)",
+              "Add mini-charts and visualizations",
+              "Add export buttons (CSV, JSON)",
+              "Show stage logs and timing information"
+            ],
+            "tests": ["Test modal opening", "Test data rendering", "Test export"]
+          },
+          {
+            "task_id": "4.3",
+            "description": "Add stage-specific mini-visualizations",
+            "files": ["frontend/src/components/bento/visualizations/*"],
+            "implementation": [
+              "Create BarChart component for counts",
+              "Create WordCloud component for themes",
+              "Create ScoreDistribution component",
+              "Create Timeline component for stage history",
+              "All optimized for small card display"
+            ],
+            "tests": ["Test each visualization component", "Test responsive sizing"]
+          },
+          {
+            "task_id": "4.4",
+            "description": "Add stage data export functionality",
+            "files": ["frontend/src/utils/export.ts"],
+            "implementation": [
+              "Add exportStageData(stage, format) function",
+              "Support CSV, JSON, and Markdown exports",
+              "Generate meaningful filenames with timestamps",
+              "Add to stage card and detail modal"
+            ],
+            "tests": ["Test each export format", "Test file download"]
+          }
+        ]
+      },
+      {
+        "phase": 5,
+        "name": "Pipeline → Results Transition Enhancement",
+        "priority": "medium",
+        "duration_estimate": "1 iteration",
+        "tasks": [
+          {
+            "task_id": "5.1",
+            "description": "Add animated transition between views",
+            "files": ["frontend/src/App.tsx", "frontend/src/components/ViewTransition.tsx"],
+            "implementation": [
+              "Create ViewTransition component with Framer Motion",
+              "Animate Bento grid cards shrinking and moving to sidebar",
+              "Fade in results view content",
+              "Add smooth scroll to top on transition"
+            ],
+            "tests": ["Visual inspection of transition", "Test animation performance"]
+          },
+          {
+            "task_id": "5.2",
+            "description": "Add pipeline summary sidebar in results view",
+            "files": ["frontend/src/components/results/PipelineSummary.tsx"],
+            "implementation": [
+              "Create collapsible sidebar showing pipeline stages",
+              "Mini version of Bento grid with key metrics",
+              "Click to expand for details",
+              "Show which stage produced current result section"
+            ],
+            "tests": ["Test sidebar rendering", "Test collapse/expand"]
+          },
+          {
+            "task_id": "5.3",
+            "description": "Add breadcrumb navigation",
+            "files": ["frontend/src/components/Breadcrumbs.tsx"],
+            "implementation": [
+              "Show: Pipeline → Stage N → Results → Tab",
+              "Clickable navigation between views",
+              "Show current location highlight",
+              "Add keyboard shortcuts (Esc to go back)"
+            ],
+            "tests": ["Test navigation", "Test keyboard shortcuts"]
+          },
+          {
+            "task_id": "5.4",
+            "description": "Add stage origin badges to result sections",
+            "files": ["frontend/src/components/results/*"],
+            "implementation": [
+              "Add small badge to each result section showing source stage",
+              "Click badge to view stage details",
+              "Show stage icon and name",
+              "Add tooltip with stage description"
+            ],
+            "tests": ["Test badge rendering", "Test click navigation"]
+          }
+        ]
+      },
+      {
+        "phase": 6,
+        "name": "Testing & Documentation",
+        "priority": "high",
+        "duration_estimate": "1 iteration",
+        "tasks": [
+          {
+            "task_id": "6.1",
+            "description": "Write comprehensive unit tests",
+            "files": ["backend/tests/test_event_logger.py", "frontend/src/**/*.test.tsx"],
+            "implementation": [
+              "Test EventLogger functionality",
+              "Test pipelineStore history management",
+              "Test stage card rendering with different states",
+              "Test export functionality",
+              "Test view transitions"
+            ],
+            "tests": ["Run test suite, ensure >90% coverage"]
+          },
+          {
+            "task_id": "6.2",
+            "description": "Write integration tests",
+            "files": ["backend/tests/test_pipeline_integration.py"],
+            "implementation": [
+              "Test full pipeline execution with event logging",
+              "Verify all events are written correctly",
+              "Test dashboard can parse all events",
+              "Test frontend receives and displays all stage updates"
+            ],
+            "tests": ["Run integration tests"]
+          },
+          {
+            "task_id": "6.3",
+            "description": "Write E2E tests",
+            "files": ["frontend/tests/e2e/pipeline-visualization.spec.ts"],
+            "implementation": [
+              "Test complete pipeline execution through UI",
+              "Verify stage cards update in real-time",
+              "Test stage history persistence",
+              "Test detail modal opening and data display",
+              "Test transition to results view",
+              "Test navigation between views"
+            ],
+            "tests": ["Run E2E tests with Playwright"]
+          },
+          {
+            "task_id": "6.4",
+            "description": "Update documentation",
+            "files": ["UX_DASHBOARD_POLISH.md"],
+            "implementation": [
+              "Document new event logging system",
+              "Document stage persistence architecture",
+              "Add screenshots of enhanced UI",
+              "Document keyboard shortcuts",
+              "Add troubleshooting guide for dashboard"
+            ],
+            "tests": ["Documentation review"]
+          }
+        ]
+      }
+    ]
+  },
+  
+  "testing_strategy": {
+    "unit_tests": [
+      "EventLogger writes correct JSON format",
+      "EventLogger handles concurrent writes",
+      "pipelineStore history operations",
+      "Stage card rendering with all status types",
+      "Export functions generate correct formats",
+      "All visualization components render correctly"
+    ],
+    "integration_tests": [
+      "Full pipeline execution logs all events",
+      "Dashboard correctly parses pipeline_events.log",
+      "Frontend WebSocket receives and processes all events",
+      "Stage data flows from backend → WebSocket → frontend → UI"
+    ],
+    "e2e_tests": [
+      "Start pipeline and watch stages update in real-time",
+      "Verify dashboard shows same progress as frontend",
+      "Complete pipeline and verify results appear",
+      "Navigate between pipeline and results views",
+      "Open stage detail modals and verify data",
+      "Export stage data and verify file contents",
+      "Refresh page and verify history persists"
+    ],
+    "visual_tests": [
+      "Stage card animations smooth",
+      "View transitions smooth",
+      "Dashboard updates without flicker",
+      "All visualizations render correctly",
+      "Responsive design works on different screen sizes"
+    ]
+  },
+  
+  "success_criteria": {
+    "functional": [
+      "Dashboard pipeline stages panel updates in real-time during execution",
+      "Dashboard pipeline events panel shows all events with correct data",
+      "Frontend Bento grid maintains stage state after pipeline completion",
+      "Stage cards show rich data previews specific to each stage type",
+      "Users can view detailed stage data via modal or expansion",
+      "Users can export stage data in multiple formats",
+      "Pipeline history persists across page refreshes",
+      "Users can navigate between pipeline and results views smoothly",
+      "Results view shows origin stage for each section"
+    ],
+    "non_functional": [
+      "Event logging doesn't impact pipeline performance",
+      "Dashboard updates without lag or flicker",
+      "Frontend handles large datasets (100+ papers) smoothly",
+      "All animations run at 60fps",
+      "Tests pass with >90% coverage",
+      "Documentation is comprehensive and accurate"
+    ],
+    "user_experience": [
+      "Pipeline progress is clear and informative",
+      "Users understand what each stage is doing",
+      "Users can inspect intermediate results easily",
+      "Navigation feels natural and intuitive",
+      "Visual feedback is immediate and satisfying",
+      "Error states are clear and actionable"
+    ]
+  },
+  
+  "rollout_plan": {
+    "phase_1_validation": {
+      "description": "Validate backend event logging",
+      "actions": [
+        "Run pipeline and verify pipeline_events.log is populated",
+        "Check dashboard displays events correctly",
+        "Verify no performance regression"
+      ],
+      "success_metric": "All pipeline events logged with <1% performance overhead"
+    },
+    "phase_2_validation": {
+      "description": "Validate dashboard enhancements",
+      "actions": [
+        "Run pipeline and watch dashboard",
+        "Verify all panels update correctly",
+        "Check no errors in dashboard logs"
+      ],
+      "success_metric": "Dashboard shows accurate real-time pipeline state"
+    },
+    "phase_3_validation": {
+      "description": "Validate frontend persistence",
+      "actions": [
+        "Complete multiple pipelines",
+        "Verify history is stored",
+        "Refresh page and check history loads",
+        "Test loading historical results"
+      ],
+      "success_metric": "All completed pipelines accessible from history"
+    },
+    "phase_4_validation": {
+      "description": "Validate enhanced stage cards",
+      "actions": [
+        "Run pipeline and check each stage card",
+        "Verify data previews render correctly",
+        "Test detail modal for each stage",
+        "Test export functionality"
+      ],
+      "success_metric": "All stage types show appropriate data previews and exports work"
+    },
+    "phase_5_validation": {
+      "description": "Validate transitions and navigation",
+      "actions": [
+        "Complete pipeline and watch transition",
+        "Test navigation between views",
+        "Check breadcrumbs work",
+        "Test keyboard shortcuts"
+      ],
+      "success_metric": "Smooth transitions, intuitive navigation, no broken links"
+    },
+    "final_validation": {
+      "description": "Full system test",
+      "actions": [
+        "Run comprehensive E2E test suite",
+        "Perform manual testing of all features",
+        "Load test with multiple concurrent pipelines",
+        "Review all documentation"
+      ],
+      "success_metric": "All tests pass, documentation complete, ready for merge"
+    }
+  },
+  
+  "risk_assessment": {
+    "risks": [
+      {
+        "risk": "Event logging impacts performance",
+        "probability": "low",
+        "impact": "medium",
+        "mitigation": "Use async file writing, batch writes, add toggle to disable verbose logging"
+      },
+      {
+        "risk": "LocalStorage quota exceeded with many pipelines",
+        "probability": "medium",
+        "impact": "low",
+        "mitigation": "Implement automatic cleanup of old history, add user-configurable limits, compress data before storage"
+      },
+      {
+        "risk": "Large datasets cause UI lag",
+        "probability": "medium",
+        "impact": "medium",
+        "mitigation": "Implement virtualization for large lists, paginate results, lazy load visualizations"
+      },
+      {
+        "risk": "Complex animations impact performance",
+        "probability": "low",
+        "impact": "low",
+        "mitigation": "Use CSS transforms, hardware acceleration, add reduced-motion mode"
+      },
+      {
+        "risk": "Breaking changes to existing functionality",
+        "probability": "low",
+        "impact": "high",
+        "mitigation": "Comprehensive test suite, feature flags, gradual rollout, easy rollback"
+      }
+    ]
+  },
+  
+  "maintenance_plan": {
+    "monitoring": [
+      "Add metrics for event logging rate",
+      "Monitor localStorage usage",
+      "Track UI performance metrics (FPS, render time)",
+      "Monitor WebSocket connection stability"
+    ],
+    "optimization_opportunities": [
+      "Implement event compression for storage",
+      "Add database backend for event persistence",
+      "Implement server-sent events as WebSocket alternative",
+      "Add result caching to improve load times"
+    ],
+    "future_enhancements": [
+      "Add collaborative features (share pipeline results)",
+      "Implement pipeline templates",
+      "Add comparison view for multiple pipelines",
+      "Implement custom visualization plugins",
+      "Add AI assistant for result interpretation"
+    ]
+  },
+  
+  "autonomous_execution_guide": {
+    "iteration_structure": "Each phase should be one autonomous iteration. Complete phase, test, commit before moving to next.",
+    "validation_checkpoints": "After each phase, run tests and validate success criteria before continuing.",
+    "rollback_strategy": "If phase fails, rollback to previous commit and analyze failure before retrying.",
+    "self_healing": "If test fails, analyze error logs, identify root cause, fix, and re-test.",
+    "progress_reporting": "After each phase, create brief summary of changes, test results, and next steps.",
+    "learning_notes": [
+      "Pipeline event logging is critical - ensure events are written before WebSocket emit",
+      "Frontend state management should prioritize immutability for time-travel debugging",
+      "Dashboard visualization requires careful handling of ANSI codes and terminal sizing",
+      "localStorage has 5-10MB limit - implement cleanup strategy early",
+      "Framer Motion animations can impact performance - use transform properties and will-change",
+      "WebSocket reconnection must preserve pipeline state",
+      "Test with real pipeline delays to catch race conditions"
+    ]
+  },
+  
+  "dependencies": {
+    "internal": [
+      "Existing WebSocket infrastructure",
+      "Current pipelineStore implementation",
+      "Bento grid component structure",
+      "Results view components"
+    ],
+    "external": [
+      {
+        "package": "rich",
+        "version": ">=13.0.0",
+        "purpose": "Dashboard terminal UI (already installed)"
+      },
+      {
+        "package": "recharts",
+        "version": "^2.10.0",
+        "purpose": "Frontend charts and visualizations",
+        "install": "npm install recharts"
+      },
+      {
+        "package": "react-wordcloud",
+        "version": "^1.2.7",
+        "purpose": "Word cloud visualization for themes",
+        "install": "npm install react-wordcloud d3-cloud"
+      },
+      {
+        "package": "file-saver",
+        "version": "^2.0.5",
+        "purpose": "Client-side file exports",
+        "install": "npm install file-saver @types/file-saver"
+      }
+    ]
+  },
+  
+  "files_to_modify": [
+    "backend/infrastructure/event_logger.py (new)",
+    "backend/infrastructure/pipeline_executor.py",
+    "backend/api/routes.py",
+    "dashboard.py",
+    "frontend/src/stores/pipelineStore.ts",
+    "frontend/src/hooks/useWebSocket.ts",
+    "frontend/src/components/bento/StageBentoCard.tsx",
+    "frontend/src/components/bento/BentoGrid.tsx",
+    "frontend/src/components/bento/StageDetailModal.tsx (new)",
+    "frontend/src/components/bento/visualizations/* (new)",
+    "frontend/src/components/PipelineHistory.tsx (new)",
+    "frontend/src/components/ViewTransition.tsx (new)",
+    "frontend/src/components/results/PipelineSummary.tsx (new)",
+    "frontend/src/components/Breadcrumbs.tsx (new)",
+    "frontend/src/utils/export.ts (new)",
+    "frontend/src/App.tsx"
+  ],
+  
+  "estimated_completion": "6 autonomous iterations (~2-3 hours with testing)",
+  
+  "success_indicators": [
+    "✅ Dashboard shows real-time pipeline execution with all events",
+    "✅ Stage cards display rich, interpretable data previews",
+    "✅ Pipeline results persist and are accessible after completion",
+    "✅ Users can navigate smoothly between pipeline and results views",
+    "✅ All tests pass with high coverage",
+    "✅ No performance regressions",
+    "✅ Documentation is complete and accurate"
+  ]
+}
