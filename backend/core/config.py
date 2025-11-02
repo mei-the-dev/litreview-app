@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     semantic_scholar_api_key: str | None = None
     use_local_models: bool = False
     
+    # GPU Configuration
+    use_gpu: bool = True  # Auto-detect and use GPU if available
+    enable_fp16: bool = True  # Mixed precision for better performance
+    embedding_model: str = "sentence-transformers/all-mpnet-base-v2"
+    summarization_model: str = "facebook/bart-large-cnn"
+    
     # Pipeline Settings
     max_papers_per_query: int = 50
     relevance_threshold: float = 0.5

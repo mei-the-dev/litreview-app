@@ -6,7 +6,8 @@ const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
 
 export const useWebSocket = (sessionId: string | null) => {
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<number | undefined>();
+  const pollingIntervalRef = useRef<number | undefined>();
   const { 
     updateStage, 
     setReport, 
@@ -15,7 +16,8 @@ export const useWebSocket = (sessionId: string | null) => {
     setPapers,
     setThemes,
     setMethodologies,
-    setRankedPapers
+    setRankedPapers,
+    isRunning
   } = usePipelineStore();
   
   const handleMessage = useCallback((event: MessageEvent) => {
@@ -82,8 +84,9 @@ export const useWebSocket = (sessionId: string | null) => {
           
           if (update.stage === 7 && update.result?.pdf_path) {
             // Stage 7: PDF generated
+            console.log('🎉 Stage 7 complete! PDF path:', update.result.pdf_path);
             setPdfPath(update.result.pdf_path);
-            console.log('PDF generated:', update.result.pdf_path);
+            console.log('📍 setPdfPath called - should navigate to results');
           }
         }
         break;
@@ -100,6 +103,61 @@ export const useWebSocket = (sessionId: string | null) => {
         break;
     }
   }, [updateStage, setReport, setPdfPath, setError, setPapers, setThemes, setMethodologies, setRankedPapers]);
+  
+  // Polling fallback to check pipeline status
+  const startPolling = useCallback((sid: string) => {
+    console.log('🔄 Starting polling fallback for session:', sid);
+    
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/pipeline/status/${sid}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('📊 Polling status:', data.status);
+          
+          if (data.status === 'completed' && data.result) {
+            console.log('✅ Pipeline completed! Fetching final results...');
+            
+            // Extract all data from result
+            const { report, pdf_path } = data.result;
+            
+            // Store all data
+            if (report) {
+              setReport(report);
+              
+              // Extract papers from report if available
+              if (report.top_papers) {
+                setRankedPapers(report.top_papers);
+              }
+            }
+            
+            // Navigate to results
+            if (pdf_path) {
+              console.log('🎯 Navigating to results with PDF:', pdf_path);
+              setPdfPath(pdf_path);
+            }
+            
+            // Stop polling
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = undefined;
+            }
+          } else if (data.status === 'failed') {
+            console.error('❌ Pipeline failed:', data.error);
+            setError(data.error || 'Pipeline failed');
+            
+            // Stop polling
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = undefined;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 5000); // Poll every 5 seconds
+  }, [setReport, setPdfPath, setError, setRankedPapers]);
   
   const connect = useCallback(() => {
     if (!sessionId || wsRef.current?.readyState === WebSocket.OPEN) {
@@ -130,19 +188,32 @@ export const useWebSocket = (sessionId: string | null) => {
       console.log('WebSocket closed');
       wsRef.current = null;
       
-      // Attempt to reconnect after 2 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        console.log('Attempting to reconnect...');
-        connect();
-      }, 2000);
+      // Start polling fallback if pipeline is still running
+      if (sessionId && isRunning) {
+        console.log('⚠️ WebSocket closed but pipeline still running - starting polling fallback');
+        startPolling(sessionId);
+      }
+      
+      // Attempt to reconnect after 2 seconds (only if not already polling)
+      if (!pollingIntervalRef.current) {
+        reconnectTimeoutRef.current = setTimeout(() => {
+          console.log('Attempting to reconnect...');
+          connect();
+        }, 2000);
+      }
     };
     
     wsRef.current = ws;
-  }, [sessionId, handleMessage]);
+  }, [sessionId, handleMessage, isRunning, startPolling]);
   
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
+    }
+    
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = undefined;
     }
     
     if (wsRef.current) {

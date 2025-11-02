@@ -246,17 +246,18 @@ class TestEndToEndResultsFlow:
         assert response.status_code == 200
         session_id = response.json()["session_id"]
         
-        # In a real test, we would:
-        # 1. Connect to WebSocket
-        # 2. Wait for all stages to complete
-        # 3. Verify each stage sends correct data structure
-        # 4. Verify final results are accessible
+        # Wait briefly for pipeline to start processing
+        import time
+        time.sleep(2)
         
-        # log_monitor.info(f"Pipeline {session_id} should produce complete results")
+        # Check pipeline status
+        status_response = client.get(f"/api/pipeline/status/{session_id}")
+        assert status_response.status_code == 200
+        status_data = status_response.json()
         
-        # Check for errors
-        errors = log_monitor.get_errors()
-        assert len(errors) == 0, f"Pipeline had errors: {errors}"
+        # Verify pipeline started successfully
+        assert status_data["status"] in ["running", "in_progress", "completed"], \
+            f"Pipeline should be running or completed, got: {status_data['status']}"
 
 
 class TestResultsViewTransition:

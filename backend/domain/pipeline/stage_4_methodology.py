@@ -69,6 +69,12 @@ async def execute(session_id: str, papers: List[Paper]) -> Dict[str, List[Paper]
                 method: len(papers_list)
                 for method, papers_list in methodologies.items()
             }
+        },
+        data={
+            "methodologies": {
+                method: [p.model_dump() for p in papers_list]
+                for method, papers_list in methodologies.items()
+            }
         }
     )
     

@@ -50,3 +50,9 @@ htmlcov/
 .cache/
 models/
 backend/.env
+
+# AI Pair Programming
+*.marko.json.bak
+.ai-context/
+temp_*.py
+debug_*.log

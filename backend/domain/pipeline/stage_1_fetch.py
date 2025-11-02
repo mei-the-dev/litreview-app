@@ -39,6 +39,9 @@ async def execute(session_id: str, keywords: List[str], max_papers: int = 50) ->
         result={
             "papers_count": len(papers),
             "papers": [p.model_dump() for p in papers[:5]]  # Preview first 5
+        },
+        data={
+            "papers": [p.model_dump() for p in papers]  # All papers for frontend
         }
     )
     

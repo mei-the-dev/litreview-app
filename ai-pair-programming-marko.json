@@ -1,0 +1,385 @@
+{
+  "marko_version": "5.0.0",
+  "title": "AI Pair Programming & Git Configuration - LitReview Project",
+  "description": "Configuration and conventions for AI-human collaborative development with full autonomy support",
+  "created_at": "2025-11-02T23:14:29Z",
+  "status": "active",
+  
+  "core_principles": {
+    "collaboration_model": "human+ai_pair_programming",
+    "ai_role": "autonomous_coding_agent",
+    "human_role": "product_owner_and_reviewer",
+    "communication_style": "direct_and_concise",
+    "decision_authority": {
+      "ai_autonomous": [
+        "Code implementation",
+        "Testing strategy",
+        "Debugging and fixes",
+        "Performance optimization",
+        "Documentation updates",
+        "Dependency management",
+        "Git operations (commit, push, branch)",
+        "MARKO updates and creation"
+      ],
+      "human_approval_required": [
+        "Architecture changes",
+        "External service integration changes",
+        "Security-critical changes",
+        "Breaking API changes",
+        "Production deployments"
+      ]
+    }
+  },
+  
+  "git_configuration": {
+    "commit_conventions": {
+      "format": "conventional_commits",
+      "structure": "<type>(<scope>): <subject>",
+      "types": {
+        "feat": "New feature",
+        "fix": "Bug fix",
+        "refactor": "Code refactoring",
+        "test": "Testing improvements",
+        "docs": "Documentation",
+        "perf": "Performance improvement",
+        "chore": "Maintenance tasks",
+        "ci": "CI/CD changes",
+        "style": "Code style changes"
+      },
+      "scopes": [
+        "pipeline",
+        "frontend",
+        "backend",
+        "api",
+        "ui",
+        "tests",
+        "marko",
+        "git",
+        "deps"
+      ],
+      "examples": [
+        "feat(pipeline): add GPU monitoring to stage 6",
+        "fix(frontend): resolve navigation to results page",
+        "test(e2e): improve frontend rendering tests",
+        "refactor(backend): optimize LLM model loading",
+        "docs(marko): create AI pair programming guide"
+      ]
+    },
+    
+    "branching_strategy": {
+      "main_branch": "main",
+      "development_branch": "feature/ux-testing (current)",
+      "branch_naming": {
+        "format": "<type>/<description>",
+        "types": ["feature", "fix", "refactor", "test", "docs"],
+        "examples": [
+          "feature/gpu-optimization",
+          "fix/stage6-synthesis",
+          "refactor/dashboard-monitoring",
+          "test/e2e-pipeline"
+        ]
+      },
+      "branch_lifecycle": {
+        "create": "git checkout -b <type>/<description>",
+        "work": "Iterative commits as AI develops",
+        "test": "Run comprehensive test suite",
+        "review": "Human reviews changes",
+        "merge": "Squash and merge to main (after approval)",
+        "cleanup": "Delete branch after merge"
+      }
+    },
+    
+    "commit_practices": {
+      "frequency": "commit_after_each_logical_unit",
+      "logical_units": [
+        "Single feature completion",
+        "Bug fix with tests",
+        "Refactoring a module",
+        "Documentation update",
+        "Configuration change"
+      ],
+      "commit_message_template": {
+        "subject_line": "50 chars max, imperative mood",
+        "body": "Wrap at 72 chars, explain WHY not WHAT",
+        "footer": "Reference issues/PRs if applicable"
+      },
+      "atomic_commits": true,
+      "include_tests": "Always commit tests with code changes"
+    },
+    
+    "git_author_configuration": {
+      "ai_commits": {
+        "name": "Claude AI + Mei",
+        "email": "ai+mei@litreview-app.dev",
+        "format": "Co-authored-by: Claude AI <claude@anthropic.com>"
+      },
+      "pair_programming_attribution": "Always include co-author in commit body",
+      "commit_body_template": [
+        "",
+        "Implemented by: Claude AI (autonomous)",
+        "Reviewed by: Mei (human)",
+        "",
+        "Co-authored-by: Claude AI <claude@anthropic.com>",
+        "Co-authored-by: Mei <mei@litreview-app.dev>"
+      ]
+    }
+  },
+  
+  "ai_autonomy_guidelines": {
+    "autonomous_operations": {
+      "code_changes": {
+        "scope": "Full autonomy within task boundaries",
+        "testing": "Always write and run tests before commit",
+        "validation": "Self-validate through testing and monitoring",
+        "rollback": "Revert if tests fail or monitoring shows issues"
+      },
+      
+      "git_operations": {
+        "commit": {
+          "when": "After logical unit completion",
+          "requirements": ["Tests pass", "Code is validated", "Follows conventions"]
+        },
+        "push": {
+          "when": "After each commit or logical batch",
+          "requirements": ["Committed changes", "Tests pass"]
+        },
+        "branch": {
+          "create": "For each new feature/fix task",
+          "switch": "As needed for parallel work"
+        },
+        "merge": {
+          "self_merge": "Only fast-forward merges",
+          "requires_approval": "Merging to main branch"
+        }
+      },
+      
+      "marko_operations": {
+        "create_new": "Full autonomy to create task-specific MARKOs",
+        "update_existing": "Full autonomy to update status and progress",
+        "decision_log": "Always document architectural decisions"
+      }
+    },
+    
+    "feedback_loops": {
+      "automated_feedback": [
+        "Test results (pytest, jest)",
+        "Linter output (eslint, pylint)",
+        "Type checking (TypeScript, mypy)",
+        "Monitoring dashboard (errors, performance)",
+        "Log analysis (backend, frontend)"
+      ],
+      "self_correction": {
+        "on_test_failure": "Analyze, fix, retest autonomously",
+        "on_monitoring_alert": "Investigate logs, fix, verify",
+        "on_build_failure": "Debug, resolve, rebuild",
+        "max_iterations": 3,
+        "escalate_to_human": "After 3 failed attempts"
+      }
+    }
+  },
+  
+  "documentation_standards": {
+    "marko_files": {
+      "when_to_create": [
+        "New feature development",
+        "Complex bug investigation",
+        "System improvements",
+        "Testing strategies"
+      ],
+      "naming": "<purpose>-marko.json",
+      "location": "Project root",
+      "content_requirements": [
+        "Clear objectives",
+        "Task breakdown",
+        "Success criteria",
+        "Dependencies",
+        "Progress tracking"
+      ]
+    },
+    
+    "code_documentation": {
+      "inline_comments": "Only for complex logic, avoid obvious comments",
+      "docstrings": {
+        "python": "Google style docstrings",
+        "typescript": "JSDoc format"
+      },
+      "readme_updates": "Update when user-facing features change"
+    },
+    
+    "status_reports": {
+      "frequency": "After major milestones",
+      "format": "Markdown summary files",
+      "location": "Project root",
+      "naming": "<FEATURE>_COMPLETE.md or <TASK>_SUMMARY.md"
+    }
+  },
+  
+  "testing_strategy": {
+    "test_first_approach": false,
+    "test_coverage_target": 80,
+    "testing_layers": {
+      "unit_tests": {
+        "backend": "pytest",
+        "frontend": "jest (if needed)",
+        "when": "For isolated business logic"
+      },
+      "integration_tests": {
+        "backend": "pytest with real API calls",
+        "when": "For pipeline stages and external APIs"
+      },
+      "e2e_tests": {
+        "tool": "Python scripts simulating user flows",
+        "when": "For full pipeline validation",
+        "no_mocks": true
+      }
+    },
+    "autonomous_test_execution": {
+      "before_commit": "Run relevant test suite",
+      "after_fix": "Run full test suite",
+      "continuous": "Monitor test results and fix autonomously"
+    }
+  },
+  
+  "monitoring_and_debugging": {
+    "dashboard_usage": {
+      "tool": "dashboard.py (colorful CLI)",
+      "purpose": "Real-time error monitoring and logging",
+      "usage": "Run in separate terminal window",
+      "features": [
+        "Pipeline stage tracking",
+        "Error log aggregation",
+        "GPU/LLM monitoring",
+        "Performance metrics"
+      ]
+    },
+    
+    "log_analysis": {
+      "backend_logs": "logs/backend.log",
+      "frontend_logs": "logs/frontend.log",
+      "test_logs": "Various *_output.log files",
+      "ai_action": "Analyze logs autonomously to identify issues"
+    },
+    
+    "debugging_workflow": {
+      "step_1": "Reproduce issue",
+      "step_2": "Analyze logs and error messages",
+      "step_3": "Identify root cause",
+      "step_4": "Implement fix",
+      "step_5": "Write test to prevent regression",
+      "step_6": "Validate fix with tests and monitoring",
+      "step_7": "Commit and push"
+    }
+  },
+  
+  "implementation_plan": {
+    "tasks": [
+      {
+        "id": "AIGIT-001",
+        "title": "Configure git user for AI pair programming",
+        "status": "pending",
+        "commands": [
+          "git config user.name 'Claude AI + Mei'",
+          "git config user.email 'ai+mei@litreview-app.dev'"
+        ]
+      },
+      {
+        "id": "AIGIT-002",
+        "title": "Create .gitmessage template for pair programming",
+        "status": "pending",
+        "content": "Commit message template with co-author attribution"
+      },
+      {
+        "id": "AIGIT-003",
+        "title": "Configure git commit template",
+        "status": "pending",
+        "commands": [
+          "git config commit.template .gitmessage"
+        ]
+      },
+      {
+        "id": "AIGIT-004",
+        "title": "Add .gitignore entries for AI workflow",
+        "status": "pending",
+        "entries": [
+          "*.marko.json.bak",
+          ".ai-context/",
+          "temp_*.py",
+          "debug_*.log"
+        ]
+      },
+      {
+        "id": "AIGIT-005",
+        "title": "Create AI_PAIR_PROGRAMMING.md guide",
+        "status": "pending",
+        "content": "Human-readable guide for AI-human collaboration"
+      },
+      {
+        "id": "AIGIT-006",
+        "title": "Update README.md with AI pair programming section",
+        "status": "pending"
+      },
+      {
+        "id": "AIGIT-007",
+        "title": "Commit and push AI pair programming setup",
+        "status": "pending",
+        "commit_message": "chore(git): configure AI pair programming workflow"
+      }
+    ]
+  },
+  
+  "success_criteria": {
+    "git_configured": "User name and email set for AI pair programming",
+    "templates_created": "Commit message template and guide documents exist",
+    "marko_documented": "This MARKO is complete and actionable",
+    "committed_and_pushed": "All changes are in git repository",
+    "human_informed": "Human understands the workflow and can review/approve"
+  },
+  
+  "human_ai_interface": {
+    "ai_asks_permission": {
+      "when": [
+        "Before merging to main",
+        "Before changing architecture",
+        "Before breaking changes",
+        "When uncertain about requirements"
+      ],
+      "format": "Clear yes/no questions with context"
+    },
+    
+    "human_provides_guidance": {
+      "when": [
+        "Requirements are unclear",
+        "Multiple implementation options exist",
+        "AI escalates after failed attempts",
+        "Product direction decisions"
+      ],
+      "ai_implements": "Human gives direction, AI implements autonomously"
+    },
+    
+    "progress_reporting": {
+      "frequency": "After each major task",
+      "format": "Concise status update with next steps",
+      "escalation": "Report blockers immediately"
+    }
+  },
+  
+  "repository_specific": {
+    "project": "litreview-app",
+    "current_state": {
+      "branch": "feature/ux-testing",
+      "status": "Active development - UX testing and monitoring improvements",
+      "recent_work": [
+        "GPU optimization",
+        "Dashboard enhancement",
+        "Frontend e2e testing",
+        "Navigation fixes",
+        "Stage 6 debugging"
+      ]
+    },
+    "immediate_next_steps": [
+      "Configure git for AI pair programming",
+      "Commit current changes",
+      "Continue autonomous development with proper git hygiene"
+    ]
+  }
+}

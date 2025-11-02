@@ -16,6 +16,11 @@ function App() {
   // Connect to WebSocket when session starts
   useWebSocket(sessionId);
   
+  // Debug: Log view changes
+  React.useEffect(() => {
+    console.log('🔄 App view changed to:', currentView);
+  }, [currentView]);
+  
   return (
     <div 
       className={`

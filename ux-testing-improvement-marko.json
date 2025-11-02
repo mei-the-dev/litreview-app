@@ -1,0 +1,780 @@
+{
+  "marko_version": "5.4.0",
+  "title": "LitReview - UX Testing & Monitoring Enhancement",
+  "description": "Comprehensive plan for improving autonomous real-time frontend E2E testing, diagnostics, and UX result presentation validation",
+  
+  "parent_markos": {
+    "main": "marko.json",
+    "testing": "testing-marko.json",
+    "frontend_e2e": "frontend-e2e-testing-marko.json",
+    "ux_presentation": "ux-presentation-marko.json"
+  },
+
+  "problem_statement": {
+    "current_issues": [
+      "Dashboard monitoring not capturing frontend logs during tests",
+      "Frontend navigation/display of pipeline results not being validated",
+      "Tests passing despite frontend rendering failures",
+      "No real-time E2E validation of WebSocket → Store → Component → DOM flow",
+      "Missing visual verification of results presentation",
+      "No automated navigation testing through results views"
+    ],
+    "impact": "Backend completes successfully but users may see blank screens or incomplete results",
+    "priority": "CRITICAL - affects user experience directly"
+  },
+
+  "solution_architecture": {
+    "approach": "Multi-layered testing with real-time monitoring",
+    "components": [
+      {
+        "component": "Playwright E2E Tests",
+        "purpose": "Browser automation for full user journey testing",
+        "coverage": [
+          "Pipeline execution with real-time updates",
+          "Navigation to results after completion",
+          "Results rendering in all tabs",
+          "Interactive filtering and searching",
+          "PDF download functionality",
+          "Error handling and recovery"
+        ]
+      },
+      {
+        "component": "Frontend Log Streaming",
+        "purpose": "Real-time console log monitoring from browser to dashboard",
+        "implementation": "WebSocket-based log streaming with severity levels"
+      },
+      {
+        "component": "Enhanced Dashboard",
+        "purpose": "Unified view of backend + frontend logs during testing",
+        "features": [
+          "Frontend console logs panel",
+          "Browser error tracking",
+          "Navigation event logging",
+          "Performance metrics visualization"
+        ]
+      },
+      {
+        "component": "Visual Regression Testing",
+        "purpose": "Ensure UI components render correctly",
+        "tool": "Playwright screenshots + pixel comparison"
+      }
+    ]
+  },
+
+  "implementation_phases": {
+    "phase_1_playwright_setup": {
+      "duration": "30 minutes",
+      "tasks": [
+        {
+          "task": "Install Playwright",
+          "command": "cd frontend && npm install -D @playwright/test playwright",
+          "verification": "npx playwright --version"
+        },
+        {
+          "task": "Initialize Playwright",
+          "command": "npx playwright install chromium",
+          "creates": "~/.cache/ms-playwright/"
+        },
+        {
+          "task": "Create Playwright config",
+          "file": "frontend/playwright.config.ts",
+          "content_template": {
+            "use": {
+              "baseURL": "http://localhost:3000",
+              "trace": "on-first-retry",
+              "screenshot": "only-on-failure",
+              "video": "retain-on-failure"
+            },
+            "projects": [
+              {
+                "name": "chromium",
+                "use": { "viewport": { "width": 1920, "height": 1080 } }
+              }
+            ],
+            "webServer": {
+              "command": "npm run dev",
+              "port": 3000,
+              "reuseExistingServer": true
+            }
+          }
+        },
+        {
+          "task": "Create test directory structure",
+          "directories": [
+            "frontend/tests/e2e/",
+            "frontend/tests/e2e/fixtures/",
+            "frontend/tests/e2e/pages/",
+            "frontend/tests/e2e/utils/"
+          ]
+        }
+      ]
+    },
+
+    "phase_2_frontend_log_streaming": {
+      "duration": "1 hour",
+      "tasks": [
+        {
+          "task": "Create console monitor utility",
+          "file": "frontend/src/utils/consoleMonitor.ts",
+          "purpose": "Intercept console methods and stream to backend",
+          "features": [
+            "Capture console.error, warn, info, log",
+            "Include stack traces",
+            "Track component names from React DevTools",
+            "Debounce to avoid flooding",
+            "Preserve original console behavior"
+          ]
+        },
+        {
+          "task": "Add backend endpoint for frontend logs",
+          "file": "backend/api/routers/monitoring_router.py",
+          "endpoint": "POST /api/monitoring/frontend-log",
+          "request_model": {
+            "level": "error | warn | info | log",
+            "message": "string",
+            "timestamp": "ISO 8601",
+            "source": "file:line:column",
+            "stack": "optional string",
+            "session_id": "optional string",
+            "url": "current page URL",
+            "user_agent": "browser info"
+          }
+        },
+        {
+          "task": "Create frontend logger service",
+          "file": "frontend/src/services/loggerService.ts",
+          "methods": [
+            "setupConsoleMonitoring()",
+            "sendLog(level, message, metadata)",
+            "enableTestMode() - for E2E tests",
+            "disableTestMode()"
+          ]
+        },
+        {
+          "task": "Integrate in frontend app",
+          "file": "frontend/src/main.tsx",
+          "integration": "Call setupConsoleMonitoring() on app startup",
+          "conditional": "Only in development or test mode"
+        }
+      ]
+    },
+
+    "phase_3_dashboard_enhancement": {
+      "duration": "1 hour",
+      "tasks": [
+        {
+          "task": "Add Frontend Logs panel",
+          "file": "dashboard.py",
+          "panel_specs": {
+            "name": "Frontend Logs",
+            "layout": "Scrolling window, 20 lines visible",
+            "color_scheme": {
+              "error": "bright_red + bold",
+              "warn": "bright_yellow",
+              "info": "bright_blue",
+              "log": "white"
+            },
+            "features": [
+              "Auto-scroll to latest",
+              "Filter by level",
+              "Search capability",
+              "Timestamp display"
+            ]
+          }
+        },
+        {
+          "task": "Add test status panel",
+          "panel_specs": {
+            "name": "Test Status",
+            "displays": [
+              "Current test running",
+              "Pass/Fail count",
+              "Duration",
+              "Last error message"
+            ]
+          }
+        },
+        {
+          "task": "Add logs/frontend.log file",
+          "location": "logs/frontend.log",
+          "rotation": "Max 10MB, keep 5 files"
+        },
+        {
+          "task": "Update log watcher",
+          "enhancement": "Watch both backend.log and frontend.log",
+          "implementation": "Use threading or asyncio for parallel watching"
+        }
+      ]
+    },
+
+    "phase_4_e2e_test_suites": {
+      "duration": "3 hours",
+      "test_files": [
+        {
+          "file": "frontend/tests/e2e/01-pipeline-execution.spec.ts",
+          "test_name": "Complete Pipeline Execution with Real-Time Updates",
+          "test_steps": [
+            "1. Navigate to homepage",
+            "2. Verify QueryInput component renders",
+            "3. Enter test keywords: 'machine learning'",
+            "4. Set max papers: 10",
+            "5. Click 'Start Review' button",
+            "6. Wait for WebSocket connection (check network tab)",
+            "7. Verify BentoGrid appears with 7 stage cards",
+            "8. For each stage (1-7):",
+            "   a. Wait for stage to start (status: 'processing')",
+            "   b. Verify progress bar animates",
+            "   c. Verify status text updates",
+            "   d. Wait for stage completion (status: 'completed')",
+            "   e. Verify completion checkmark appears",
+            "   f. Capture stage duration",
+            "9. Verify no console errors during pipeline",
+            "10. Verify total duration < 60 seconds",
+            "11. Take screenshot after each stage completion"
+          ],
+          "assertions": [
+            "expect(page.locator('[data-testid=\"query-input\"]')).toBeVisible()",
+            "expect(page.locator('.bento-card')).toHaveCount(7)",
+            "expect(consoleErrors).toHaveLength(0)",
+            "expect(duration).toBeLessThan(60000)"
+          ]
+        },
+        {
+          "file": "frontend/tests/e2e/02-results-navigation.spec.ts",
+          "test_name": "Results View Navigation and Rendering",
+          "test_steps": [
+            "1. Complete pipeline (use fixture data for speed)",
+            "2. Verify automatic navigation to ResultsView",
+            "3. Verify URL changes to '/results/:sessionId'",
+            "4. Verify all tabs are present:",
+            "   - Overview",
+            "   - All Papers",
+            "   - By Theme",
+            "   - By Methodology",
+            "   - Rankings",
+            "   - Report",
+            "   - Download PDF",
+            "5. Click each tab and verify:",
+            "   a. Tab becomes active",
+            "   b. Content panel appears",
+            "   c. Content is not empty",
+            "   d. Loading states are brief",
+            "6. Test 'All Papers' tab:",
+            "   a. Verify paper list renders",
+            "   b. Verify paper count matches backend data",
+            "   c. Verify each paper card has: title, authors, year, score",
+            "   d. Test search filter: type 'neural' → verify filtered results",
+            "   e. Clear search → verify all papers return",
+            "7. Test 'By Theme' tab:",
+            "   a. Verify pie chart renders",
+            "   b. Verify theme labels visible",
+            "   c. Click a pie segment → verify theme section expands",
+            "   d. Verify papers under theme render",
+            "8. Test 'By Methodology' tab:",
+            "   a. Verify bar chart renders",
+            "   b. Verify methodology labels",
+            "9. Test 'Rankings' tab:",
+            "   a. Verify table renders with sorted papers",
+            "   b. Click column header → verify re-sort",
+            "10. Test 'Report' tab:",
+            "    a. Verify markdown content renders",
+            "    b. Verify sections: Overview, Themes, Methodology, Top Papers",
+            "11. Test 'Download PDF' button:",
+            "    a. Click download",
+            "    b. Verify download initiated",
+            "    c. Verify PDF file appears in downloads"
+          ],
+          "page_objects": {
+            "ResultsPage": "frontend/tests/e2e/pages/ResultsPage.ts",
+            "methods": [
+              "navigateToTab(tabName)",
+              "searchPapers(query)",
+              "clickThemeSegment(themeName)",
+              "sortTableBy(columnName)",
+              "downloadPDF()"
+            ]
+          }
+        },
+        {
+          "file": "frontend/tests/e2e/03-websocket-integration.spec.ts",
+          "test_name": "WebSocket → Store → Component → DOM Flow",
+          "test_steps": [
+            "1. Open DevTools protocol connection",
+            "2. Monitor WebSocket messages via CDP",
+            "3. Start pipeline",
+            "4. For each WebSocket message received:",
+            "   a. Parse message: { type, stage, progress, data }",
+            "   b. Verify corresponding store update:",
+            "      - Inject store inspector: window.__ZUSTAND_STORE__",
+            "      - Check pipelineStore.stages[stage].status",
+            "      - Verify progress value updated",
+            "   c. Verify DOM reflects change:",
+            "      - Query stage card: [data-testid='stage-{stage}']",
+            "      - Verify status badge text",
+            "      - Verify progress bar width percentage",
+            "   d. Measure latency: WS message → DOM update",
+            "5. Assert all stages complete",
+            "6. Assert average latency < 50ms",
+            "7. Assert no missed messages"
+          ],
+          "technical_implementation": {
+            "websocket_monitoring": "page.on('websocket', ws => { ws.on('framereceived', handleFrame) })",
+            "store_inspection": "await page.evaluate(() => window.__ZUSTAND_STORE__.getState())",
+            "timing": "performance.now() before and after"
+          }
+        },
+        {
+          "file": "frontend/tests/e2e/04-error-scenarios.spec.ts",
+          "test_name": "Error Handling and Recovery",
+          "scenarios": [
+            {
+              "scenario": "Backend API fails",
+              "setup": "Mock /api/pipeline/start to return 500",
+              "expected": [
+                "Error message displays in UI",
+                "User sees helpful error: 'Pipeline failed to start'",
+                "Retry button appears",
+                "No uncaught exceptions in console"
+              ]
+            },
+            {
+              "scenario": "WebSocket disconnects mid-pipeline",
+              "setup": "Close WebSocket after stage 3",
+              "expected": [
+                "UI shows 'Connection lost' indicator",
+                "Automatic reconnection attempt",
+                "Pipeline status preserved on reconnect",
+                "User can continue from where it left off"
+              ]
+            },
+            {
+              "scenario": "No papers found",
+              "setup": "Mock Semantic Scholar to return empty results",
+              "expected": [
+                "Empty state message displays",
+                "Helpful text: 'Try different keywords'",
+                "No rendering errors"
+              ]
+            },
+            {
+              "scenario": "Stage timeout",
+              "setup": "Stage 2 takes > 120 seconds",
+              "expected": [
+                "Timeout error message",
+                "Pipeline stops gracefully",
+                "User can retry"
+              ]
+            }
+          ]
+        },
+        {
+          "file": "frontend/tests/e2e/05-console-monitoring.spec.ts",
+          "test_name": "Console Error Detection",
+          "implementation": {
+            "setup": "const errors = []; page.on('console', msg => { if (msg.type() === 'error') errors.push(msg) });",
+            "during_test": "Collect all console messages",
+            "assertions": [
+              "expect(errors).toHaveLength(0) - No errors",
+              "expect(warnings).toBeLessThan(3) - Max 2 warnings",
+              "For any error: fail test with error details"
+            ],
+            "error_categories": {
+              "react_errors": "React errors (e.g., key prop missing)",
+              "network_errors": "Failed fetch or XHR",
+              "script_errors": "Uncaught JavaScript errors",
+              "resource_errors": "404 on assets"
+            }
+          }
+        },
+        {
+          "file": "frontend/tests/e2e/06-visual-regression.spec.ts",
+          "test_name": "Visual Regression Testing",
+          "purpose": "Ensure UI renders correctly",
+          "screenshots": [
+            {
+              "name": "homepage",
+              "page": "/",
+              "viewport": "1920x1080"
+            },
+            {
+              "name": "pipeline-in-progress",
+              "page": "/",
+              "state": "Pipeline at stage 3",
+              "viewport": "1920x1080"
+            },
+            {
+              "name": "results-all-papers",
+              "page": "/results/:id",
+              "tab": "All Papers",
+              "viewport": "1920x1080"
+            },
+            {
+              "name": "results-themes",
+              "page": "/results/:id",
+              "tab": "By Theme",
+              "viewport": "1920x1080"
+            }
+          ],
+          "comparison": {
+            "tool": "Playwright built-in: expect(page).toHaveScreenshot()",
+            "threshold": "0.1% pixel difference allowed",
+            "update_command": "npx playwright test --update-snapshots"
+          }
+        },
+        {
+          "file": "frontend/tests/e2e/07-performance.spec.ts",
+          "test_name": "Performance Metrics",
+          "metrics": [
+            {
+              "metric": "Initial page load",
+              "threshold": "< 2 seconds",
+              "measurement": "performance.timing.loadEventEnd - navigationStart"
+            },
+            {
+              "metric": "WebSocket connection time",
+              "threshold": "< 500ms",
+              "measurement": "Time from start button click to WS open"
+            },
+            {
+              "metric": "Stage update render time",
+              "threshold": "< 50ms",
+              "measurement": "WS message received to DOM update visible"
+            },
+            {
+              "metric": "Results view render time",
+              "threshold": "< 1 second",
+              "measurement": "Navigation to results to content visible"
+            },
+            {
+              "metric": "Memory usage",
+              "threshold": "< 150MB heap",
+              "measurement": "performance.memory.usedJSHeapSize"
+            }
+          ]
+        }
+      ]
+    },
+
+    "phase_5_test_fixtures": {
+      "duration": "45 minutes",
+      "fixtures": [
+        {
+          "file": "frontend/tests/e2e/fixtures/pipeline-complete.json",
+          "description": "Complete pipeline result with all stages",
+          "data": {
+            "session_id": "test-session-123",
+            "stages": "Array of 7 stage results with timing",
+            "papers": "50 sample papers with full metadata",
+            "themes": "5 themes with papers grouped",
+            "methodologies": "4 methodologies with distribution",
+            "rankings": "Papers sorted by final score",
+            "report": "Full markdown report",
+            "pdf_path": "Mock PDF file path"
+          }
+        },
+        {
+          "file": "frontend/tests/e2e/fixtures/papers-sample.json",
+          "description": "Diverse set of academic papers",
+          "count": 50,
+          "diversity": [
+            "Different fields: CS, Physics, Biology",
+            "Different years: 2015-2024",
+            "Different citation counts: 0-1000",
+            "Different relevance scores: 0.3-0.95"
+          ]
+        },
+        {
+          "file": "frontend/tests/e2e/fixtures/websocket-messages.json",
+          "description": "Pre-recorded WebSocket message sequence",
+          "use": "Replay for fast testing without backend"
+        }
+      ],
+      "mock_server": {
+        "tool": "MSW (Mock Service Worker)",
+        "setup": "frontend/tests/e2e/mocks/handlers.ts",
+        "endpoints": [
+          "POST /api/pipeline/start → instant success",
+          "GET /api/pipeline/status/:id → mock status",
+          "GET /api/pipeline/result/:id → fixture data",
+          "WebSocket messages → replay from fixture"
+        ]
+      }
+    },
+
+    "phase_6_integration": {
+      "duration": "1 hour",
+      "tasks": [
+        {
+          "task": "Update package.json scripts",
+          "file": "frontend/package.json",
+          "scripts": {
+            "test:e2e": "playwright test",
+            "test:e2e:ui": "playwright test --ui",
+            "test:e2e:headed": "playwright test --headed",
+            "test:e2e:debug": "playwright test --debug",
+            "test:e2e:report": "playwright show-report"
+          }
+        },
+        {
+          "task": "Update run_tests.sh",
+          "file": "run_tests.sh",
+          "add_section": "Frontend E2E Tests",
+          "commands": [
+            "echo '=== Frontend E2E Tests ==='",
+            "cd frontend",
+            "npm run test:e2e",
+            "cd .."
+          ]
+        },
+        {
+          "task": "Create E2E test runner script",
+          "file": "run_e2e_tests.sh",
+          "features": [
+            "Start backend server",
+            "Start frontend dev server",
+            "Wait for servers to be ready",
+            "Run Playwright tests",
+            "Capture results",
+            "Stop servers",
+            "Generate report"
+          ]
+        },
+        {
+          "task": "Update dashboard",
+          "integration": "Show E2E test status in dashboard",
+          "display": [
+            "Currently running test",
+            "Pass/Fail count",
+            "Duration",
+            "Last screenshot path"
+          ]
+        }
+      ]
+    },
+
+    "phase_7_documentation": {
+      "duration": "30 minutes",
+      "tasks": [
+        {
+          "task": "Create E2E testing guide",
+          "file": "FRONTEND_E2E_TESTING.md",
+          "sections": [
+            "Setup instructions",
+            "Running tests",
+            "Debugging failures",
+            "Adding new tests",
+            "CI/CD integration",
+            "Troubleshooting"
+          ]
+        },
+        {
+          "task": "Update main README",
+          "additions": [
+            "Section on E2E testing",
+            "Link to FRONTEND_E2E_TESTING.md",
+            "Badge for test status"
+          ]
+        }
+      ]
+    }
+  },
+
+  "test_execution_modes": {
+    "fast_mode": {
+      "description": "Quick validation with mocks",
+      "command": "npm run test:e2e -- --grep @fast",
+      "duration": "< 2 minutes",
+      "uses": "Mock data, no real API calls",
+      "purpose": "Development, pre-commit checks"
+    },
+    "real_mode": {
+      "description": "Full E2E with real backend",
+      "command": "npm run test:e2e -- --grep @real",
+      "duration": "< 5 minutes",
+      "uses": "Real backend, real APIs",
+      "purpose": "Pre-deployment validation"
+    },
+    "visual_mode": {
+      "description": "Visual regression only",
+      "command": "npm run test:e2e -- --grep @visual",
+      "duration": "< 3 minutes",
+      "uses": "Screenshot comparison",
+      "purpose": "UI change validation"
+    }
+  },
+
+  "autonomous_debugging_workflow": {
+    "trigger": "E2E test failure",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Analyze test output",
+        "artifacts": [
+          "Playwright HTML report",
+          "Screenshots at failure point",
+          "Video recording",
+          "Console logs captured",
+          "Network requests/responses"
+        ]
+      },
+      {
+        "step": 2,
+        "action": "Check frontend logs",
+        "command": "grep ERROR logs/frontend.log",
+        "look_for": [
+          "React errors",
+          "API call failures",
+          "WebSocket disconnections",
+          "Rendering errors"
+        ]
+      },
+      {
+        "step": 3,
+        "action": "Inspect screenshot",
+        "questions": [
+          "Is component visible?",
+          "Is correct data displayed?",
+          "Is layout broken?",
+          "Are loading states stuck?"
+        ]
+      },
+      {
+        "step": 4,
+        "action": "Review video recording",
+        "look_for": [
+          "When did failure occur?",
+          "What user action triggered it?",
+          "Did UI freeze?",
+          "Were animations interrupted?"
+        ]
+      },
+      {
+        "step": 5,
+        "action": "Categorize issue",
+        "categories": {
+          "timing_issue": "Race condition or async handling",
+          "data_issue": "Incorrect or missing data from backend",
+          "rendering_issue": "Component failed to render",
+          "navigation_issue": "Route change failed",
+          "websocket_issue": "WS message not received or processed"
+        }
+      },
+      {
+        "step": 6,
+        "action": "Apply fix",
+        "strategies": [
+          "Add explicit wait for element",
+          "Fix data transformation",
+          "Add error boundary",
+          "Fix route definition",
+          "Add WebSocket reconnection logic"
+        ]
+      },
+      {
+        "step": 7,
+        "action": "Verify fix",
+        "command": "npm run test:e2e -- --grep <test-name>",
+        "success": "Test passes consistently (3+ runs)"
+      },
+      {
+        "step": 8,
+        "action": "Add regression test",
+        "requirement": "New test that prevents this bug from reoccurring"
+      }
+    ]
+  },
+
+  "dashboard_enhancements_detailed": {
+    "new_panels": [
+      {
+        "panel": "Frontend Logs",
+        "position": "Right side, below Backend Logs",
+        "size": "30% height",
+        "content": [
+          "Real-time stream of frontend console messages",
+          "Color-coded by level (error=red, warn=yellow)",
+          "Auto-scroll to latest",
+          "Filter buttons: [All] [Errors] [Warnings]"
+        ],
+        "implementation": {
+          "watch_file": "logs/frontend.log",
+          "update_frequency": "500ms",
+          "max_lines": 50
+        }
+      },
+      {
+        "panel": "Test Status",
+        "position": "Top right",
+        "size": "20% height",
+        "content": [
+          "Currently running: <test-name>",
+          "Progress: X/Y tests",
+          "Passed: X | Failed: Y | Skipped: Z",
+          "Duration: MM:SS",
+          "Last error: <error-message>"
+        ],
+        "data_source": "Parse pytest output + Playwright results JSON"
+      },
+      {
+        "panel": "Browser Activity",
+        "position": "Bottom center",
+        "size": "15% height",
+        "content": [
+          "Current URL: <url>",
+          "Active tab: <tab-name>",
+          "WebSocket: Connected/Disconnected",
+          "API calls: X requests, Y errors",
+          "Console errors: Z"
+        ]
+      }
+    ],
+    "layout": {
+      "top_section": "System Overview + Test Status",
+      "middle_left": "Backend Logs",
+      "middle_right": "Frontend Logs",
+      "bottom": "Browser Activity + Performance Metrics"
+    }
+  },
+
+  "success_criteria": {
+    "functional": [
+      "✅ E2E tests cover full user journey from query to results",
+      "✅ All result tabs are tested for rendering",
+      "✅ Navigation between views is validated",
+      "✅ WebSocket → Store → DOM flow is tested",
+      "✅ Console errors cause test failures",
+      "✅ Frontend logs stream to dashboard in real-time",
+      "✅ Visual regression tests catch UI breakage"
+    ],
+    "performance": [
+      "✅ Fast tests complete in < 2 minutes",
+      "✅ Real tests complete in < 5 minutes",
+      "✅ Visual tests complete in < 3 minutes",
+      "✅ Test flakiness < 1%"
+    ],
+    "developer_experience": [
+      "✅ Failed tests show clear error with screenshot",
+      "✅ Video recording shows exact failure moment",
+      "✅ Dashboard provides real-time visibility",
+      "✅ Easy to debug with --headed and --debug modes",
+      "✅ Autonomous agents can use output to fix bugs"
+    ]
+  },
+
+  "estimated_total_time": "8 hours",
+
+  "next_steps_after_completion": [
+    "Integrate E2E tests into CI/CD pipeline",
+    "Set up nightly full test runs",
+    "Add accessibility testing with @axe-core/playwright",
+    "Add mobile viewport testing",
+    "Create performance baseline and tracking",
+    "Add load testing for WebSocket connections"
+  ],
+
+  "references": {
+    "playwright_docs": "https://playwright.dev/",
+    "msw_docs": "https://mswjs.io/",
+    "zustand_testing": "https://docs.pmnd.rs/zustand/guides/testing"
+  }
+}

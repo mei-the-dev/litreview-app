@@ -1,0 +1,437 @@
+{
+  "marko_version": "5.5.0",
+  "title": "Test Blind Spots Analysis & Fix - LitReview App",
+  "description": "Comprehensive plan to identify and fix test blind spots that allow failures to pass as successes",
+  
+  "parent_markos": {
+    "main": "marko.json",
+    "testing": "testing-marko.json",
+    "ux_testing": "ux-testing-improvement-marko.json"
+  },
+
+  "problem_analysis": {
+    "discovered_issues": [
+      {
+        "issue": "HuggingFace API 400/500 errors not failing tests",
+        "evidence": "Logs show repeated '400 Bad Request' but all tests pass",
+        "root_cause": "Tests check if fallback works, not if primary API works",
+        "severity": "CRITICAL",
+        "impact": "Production could run in degraded mode indefinitely"
+      },
+      {
+        "issue": "Frontend rendering failures not detected",
+        "evidence": "Vite config error in logs, but no test failures",
+        "root_cause": "No real browser-based E2E tests running",
+        "severity": "CRITICAL",
+        "impact": "Users see blank/broken UI but tests pass"
+      },
+      {
+        "issue": "Dashboard not capturing frontend logs",
+        "evidence": "Frontend logs exist but dashboard doesn't show them",
+        "root_cause": "Dashboard only watches backend.log, missing frontend.log",
+        "severity": "HIGH",
+        "impact": "Frontend issues invisible during monitoring"
+      }
+    ],
+    
+    "test_philosophy_problem": {
+      "current": "Tests validate 'system works somehow' (fallback counts as success)",
+      "required": "Tests validate 'system works AS DESIGNED' (fallback is degraded state)",
+      "fix": "Separate tests for primary path vs degraded path"
+    }
+  },
+
+  "test_categorization": {
+    "tier_1_critical_path_tests": {
+      "description": "Must use REAL APIs and REAL browser, no mocks",
+      "purpose": "Validate actual user experience",
+      "tests": [
+        "HuggingFace API with real key → must succeed",
+        "Semantic Scholar API with real key → must succeed",
+        "Full pipeline E2E with real browser → must render results",
+        "WebSocket real-time updates → must appear in browser DOM",
+        "PDF generation → must create downloadable file"
+      ],
+      "failure_mode": "FAIL IMMEDIATELY if any issue detected"
+    },
+    
+    "tier_2_degraded_mode_tests": {
+      "description": "Test fallback mechanisms work",
+      "purpose": "Ensure graceful degradation",
+      "tests": [
+        "HuggingFace API fails → local model works",
+        "WebSocket disconnects → polling fallback works",
+        "PDF generation fails → error message shown"
+      ],
+      "failure_mode": "FAIL if fallback doesn't work, WARN about degraded state"
+    },
+    
+    "tier_3_unit_tests": {
+      "description": "Isolated component tests with mocks",
+      "purpose": "Fast feedback during development",
+      "tests": [
+        "Model loading logic",
+        "Data transformation functions",
+        "Scoring algorithms"
+      ],
+      "failure_mode": "FAIL if logic broken"
+    }
+  },
+
+  "implementation_plan": {
+    "phase_1_fix_api_tests": {
+      "duration": "30 minutes",
+      "tasks": [
+        {
+          "task": "Validate HuggingFace API key",
+          "file": "backend/tests/test_api_health_real.py",
+          "new_test": "test_huggingface_api_key_valid_and_working",
+          "logic": [
+            "1. Load API key from settings",
+            "2. Make direct HTTP request to HF API",
+            "3. Assert response is 200 (not 400, not 500)",
+            "4. If 400: FAIL with 'API key invalid or expired'",
+            "5. If 500: FAIL with 'HuggingFace service down'",
+            "6. If 503: FAIL with 'Model loading, try again'",
+            "7. Only pass if embeddings returned successfully"
+          ],
+          "no_fallback": "This test MUST NOT use fallback logic"
+        },
+        {
+          "task": "Add API degradation detector",
+          "file": "backend/tests/conftest.py",
+          "fixture": "api_health_checker",
+          "logic": [
+            "Before test suite: Check both APIs",
+            "If API down: SKIP related tests with reason",
+            "If API degraded: Run tests but mark expected failures",
+            "Track degradation in test report"
+          ]
+        },
+        {
+          "task": "Separate primary from fallback tests",
+          "changes": [
+            {
+              "file": "backend/tests/test_real_pipeline_e2e.py",
+              "split_test": "test_huggingface_api_or_fallback_works",
+              "into": [
+                "test_huggingface_primary_api_works (no fallback allowed)",
+                "test_huggingface_fallback_works_when_api_down (mock API failure)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    "phase_2_fix_frontend_tests": {
+      "duration": "2 hours",
+      "prerequisite": "Install Playwright",
+      "tasks": [
+        {
+          "task": "Setup Playwright",
+          "commands": [
+            "cd frontend",
+            "npm install -D @playwright/test",
+            "npx playwright install chromium"
+          ]
+        },
+        {
+          "task": "Create real browser E2E test",
+          "file": "frontend/tests/e2e/critical-path.spec.ts",
+          "test_scenarios": [
+            {
+              "name": "Pipeline execution renders in browser",
+              "steps": [
+                "Start backend server",
+                "Start frontend dev server", 
+                "Open browser to http://localhost:3000",
+                "Assert: Query input visible",
+                "Type: 'neural networks'",
+                "Click: Start Review button",
+                "Wait: WebSocket connection established",
+                "Assert: 7 stage cards appear",
+                "Wait: All stages complete (max 60s)",
+                "Assert: Navigation to /results/:id",
+                "Assert: All Papers tab renders",
+                "Assert: Paper count > 0",
+                "Assert: NO console.error in browser",
+                "Take screenshot",
+                "FAIL if any step fails"
+              ],
+              "no_mocks": "Real backend, real APIs, real browser"
+            }
+          ]
+        },
+        {
+          "task": "Add console error monitoring",
+          "implementation": {
+            "file": "frontend/tests/e2e/helpers/console-monitor.ts",
+            "code_template": {
+              "setup": "const errors = []; page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })",
+              "assertion": "expect(errors).toHaveLength(0)",
+              "report": "If errors found: fail test with error details"
+            }
+          }
+        },
+        {
+          "task": "Add network request monitoring",
+          "purpose": "Detect 400/500 errors in browser",
+          "implementation": {
+            "monitor": "page.on('response', response => { if (response.status() >= 400) failedRequests.push(response) })",
+            "assertion": "expect(failedRequests).toHaveLength(0)"
+          }
+        }
+      ]
+    },
+
+    "phase_3_enhanced_dashboard": {
+      "duration": "1 hour",
+      "tasks": [
+        {
+          "task": "Add frontend log panel to dashboard",
+          "file": "dashboard.py",
+          "changes": [
+            "Watch logs/frontend.log in addition to backend.log",
+            "Add new panel 'Frontend Logs'",
+            "Color code: error=red, warn=yellow, info=blue",
+            "Auto-scroll to latest",
+            "Show last 50 lines"
+          ]
+        },
+        {
+          "task": "Add API health status panel",
+          "display": [
+            "HuggingFace API: ✅ OK | ⚠️  Degraded (fallback) | ❌ Down",
+            "Semantic Scholar API: ✅ OK | ❌ Down",
+            "WebSocket: ✅ Connected | ❌ Disconnected",
+            "Frontend: ✅ Running | ❌ Crashed"
+          ]
+        },
+        {
+          "task": "Add test status panel",
+          "display": [
+            "Running: <test-name>",
+            "Passed: X | Failed: Y | Skipped: Z",
+            "Duration: MM:SS",
+            "Last failure: <error-message>"
+          ]
+        }
+      ]
+    },
+
+    "phase_4_test_orchestration": {
+      "duration": "45 minutes",
+      "tasks": [
+        {
+          "task": "Create comprehensive test runner",
+          "file": "run_comprehensive_tests.sh",
+          "test_sequence": [
+            "1. Pre-flight checks:",
+            "   - API keys present",
+            "   - Dependencies installed",
+            "   - Ports available",
+            "2. Tier 1: Critical path (real APIs, real browser)",
+            "   - Start backend + frontend",
+            "   - Run Playwright E2E tests",
+            "   - STOP if any fail",
+            "3. Tier 2: Degraded mode tests",
+            "   - Mock API failures",
+            "   - Verify fallbacks work",
+            "4. Tier 3: Unit tests",
+            "   - Backend pytest suite",
+            "   - Frontend Vitest suite",
+            "5. Generate report:",
+            "   - Test results summary",
+            "   - API health status",
+            "   - Screenshots of failures",
+            "   - Log excerpts"
+          ]
+        },
+        {
+          "task": "Add test markers",
+          "pytest_markers": {
+            "@pytest.mark.critical": "Tier 1 - must pass",
+            "@pytest.mark.degraded": "Tier 2 - fallback tests",
+            "@pytest.mark.unit": "Tier 3 - isolated tests",
+            "@pytest.mark.requires_api": "Needs real API keys",
+            "@pytest.mark.requires_browser": "Needs Playwright"
+          }
+        }
+      ]
+    },
+
+    "phase_5_fix_specific_issues": {
+      "duration": "1 hour",
+      "fixes": [
+        {
+          "issue": "HuggingFace API 400 errors",
+          "diagnosis": [
+            "Check if API key is valid",
+            "Check if API key has proper scopes",
+            "Check if HF service is up",
+            "Check rate limits"
+          ],
+          "potential_fixes": [
+            "Option 1: Get new API key from HuggingFace",
+            "Option 2: Use different HF model (public/free tier)",
+            "Option 3: Switch to local-only mode",
+            "Option 4: Add retry logic with exponential backoff"
+          ],
+          "test_fix": {
+            "file": "backend/tests/test_hf_api_debug.py",
+            "test": "test_diagnose_hf_api_failure",
+            "outputs": [
+              "API key format: valid/invalid",
+              "API response: 200/400/500/503",
+              "Error message: <exact error from HF>",
+              "Recommended action: <specific fix>"
+            ]
+          }
+        },
+        {
+          "issue": "Frontend Vite config error",
+          "diagnosis": "Vite module not found",
+          "fix": [
+            "cd frontend",
+            "npm install",
+            "Verify node_modules/vite exists",
+            "Test: npm run dev"
+          ]
+        },
+        {
+          "issue": "Frontend logs not captured",
+          "fix": [
+            "Ensure logs/frontend.log exists",
+            "Add log rotation (max 10MB)",
+            "Update dashboard to watch it",
+            "Test: echo 'test' >> logs/frontend.log and verify dashboard shows it"
+          ]
+        }
+      ]
+    }
+  },
+
+  "test_quality_metrics": {
+    "before": {
+      "total_tests": 50,
+      "passing": 50,
+      "actual_issues": 3,
+      "detected_by_tests": 0,
+      "detection_rate": "0% - All tests passing despite real failures"
+    },
+    "target": {
+      "detection_rate": "100% - Every real issue causes test failure",
+      "false_positive_rate": "< 5%",
+      "test_run_time": "< 5 minutes for critical path",
+      "developer_clarity": "Test failure message clearly explains what's broken and how to fix"
+    }
+  },
+
+  "execution_order": {
+    "step_1": "Phase 5: Fix immediate issues (HF API, Vite config, frontend logs)",
+    "step_2": "Phase 1: Fix API tests to detect failures properly",
+    "step_3": "Phase 2: Add real browser E2E tests",
+    "step_4": "Phase 3: Enhance dashboard",
+    "step_5": "Phase 4: Create comprehensive test runner",
+    "step_6": "Validation: Run all tests and verify all 3 known issues are detected"
+  },
+
+  "success_criteria": {
+    "must_have": [
+      "✅ HuggingFace API 400 errors cause test failure",
+      "✅ Frontend Vite errors cause test failure",
+      "✅ Console.error in browser causes test failure",
+      "✅ Dashboard shows frontend logs",
+      "✅ Clear distinction between primary and degraded mode",
+      "✅ Test failure messages explain the problem and solution"
+    ],
+    "should_have": [
+      "✅ Automated API health checks before tests",
+      "✅ Screenshots of browser at failure point",
+      "✅ Test report includes API status",
+      "✅ Autonomous agent can read test output and fix issues"
+    ]
+  },
+
+  "autonomous_debugging_workflow": {
+    "when_test_fails": [
+      "1. Read test output: exact error message",
+      "2. Read logs: backend.log + frontend.log for context",
+      "3. View screenshots: if E2E test, check visual failure",
+      "4. Check API health: are external services up?",
+      "5. Categorize issue: API, Frontend, Backend, Config",
+      "6. Apply fix from playbook",
+      "7. Re-run tests to verify fix",
+      "8. Document: what broke, why, how fixed"
+    ],
+    "playbook": {
+      "HF_API_400": "Check API key validity, get new key if needed",
+      "HF_API_500": "HF service down, switch to local mode temporarily",
+      "Frontend_Error": "Check npm install, check Vite config",
+      "WebSocket_Failed": "Check CORS, check backend running",
+      "No_Papers": "Check Semantic Scholar API, check query keywords"
+    }
+  },
+
+  "monitoring_dashboard_requirements": {
+    "real_time_panels": [
+      "System Health (CPU, Memory, Disk)",
+      "API Status (HF, Semantic Scholar)",
+      "Backend Logs (streaming)",
+      "Frontend Logs (streaming)",
+      "Test Status (current test, pass/fail count)",
+      "WebSocket Connections (active count)",
+      "Pipeline Status (current stage, progress)",
+      "Error Summary (last 10 errors)"
+    ],
+    "alerts": [
+      "API down → show alert",
+      "Memory > 90% → show warning",
+      "Test failure → highlight failed test",
+      "Console error → flash red"
+    ]
+  },
+
+  "documentation_updates": {
+    "files_to_update": [
+      {
+        "file": "TESTS.md",
+        "add_section": "Understanding Test Tiers",
+        "content": "Explain critical path vs degraded vs unit tests"
+      },
+      {
+        "file": "TROUBLESHOOTING.md",
+        "add_section": "Common Test Failures",
+        "content": "Playbook for each failure type"
+      },
+      {
+        "file": "README.md",
+        "add_section": "Monitoring Dashboard",
+        "content": "How to use dashboard during testing"
+      }
+    ]
+  },
+
+  "estimated_time": "5-6 hours total",
+  
+  "deliverables": [
+    "1. All 3 known issues detected by tests",
+    "2. Tests fail loudly with clear error messages",
+    "3. Dashboard shows both backend + frontend logs",
+    "4. Real browser E2E tests validate UX",
+    "5. Comprehensive test runner with tiered approach",
+    "6. Documentation for autonomous debugging",
+    "7. Test report includes API health status"
+  ],
+
+  "validation": {
+    "final_check": [
+      "1. Run tests → expect failures for known issues",
+      "2. Fix HF API key → tests should pass",
+      "3. Fix Vite config → tests should pass",
+      "4. Break something intentionally → test should catch it",
+      "5. Read dashboard during test run → should see both backend + frontend logs"
+    ]
+  }
+}

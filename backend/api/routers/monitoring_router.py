@@ -81,6 +81,22 @@ async def get_frontend_logs(lines: int = 100):
         raise HTTPException(status_code=500, detail=f"Failed to retrieve logs: {str(e)}")
 
 
+@router.get("/gpu-stats")
+async def get_gpu_stats():
+    """
+    Get GPU statistics from the HuggingFace client.
+    """
+    try:
+        from backend.infrastructure.ai.huggingface_client import hf_client
+        stats = hf_client.get_gpu_stats()
+        return stats
+    except Exception as e:
+        return {
+            "device": "unknown",
+            "error": str(e)
+        }
+
+
 @router.get("/health-detailed")
 async def health_detailed():
     """

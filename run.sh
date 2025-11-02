@@ -88,15 +88,31 @@ echo -e "${GREEN}   📝 Logs: logs/backend.log${NC}"
 cd ..
 
 # Wait for backend to start
-echo -e "${BLUE}   Waiting for backend to initialize...${NC}"
-sleep 3
-
-# Check if backend is running
-if ! curl -s http://localhost:8000/health > /dev/null; then
-    echo -e "${RED}   ✗ Backend failed to start!${NC}"
-    echo -e "${RED}   Check logs/backend.log for errors${NC}"
-    exit 1
-fi
+echo -e "${BLUE}   Waiting for backend to initialize (GPU loading may take 30-60s)...${NC}"
+RETRY_COUNT=0
+MAX_RETRIES=30
+DOTS=""
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+        echo ""
+        echo -e "${GREEN}   ✓ Backend is healthy${NC}"
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo ""
+        echo -e "${RED}   ✗ Backend failed to start after ${MAX_RETRIES} retries (60s)!${NC}"
+        echo -e "${RED}   Check logs/backend.log for errors${NC}"
+        echo ""
+        echo -e "${YELLOW}Last 30 lines of backend log:${NC}"
+        tail -30 logs/backend.log
+        exit 1
+    fi
+    # Show progress dots
+    DOTS="${DOTS}."
+    echo -ne "\r   Initializing${DOTS} (${RETRY_COUNT}/${MAX_RETRIES})"
+    sleep 2
+done
 
 echo -e "${GREEN}   ✓ Backend is healthy!${NC}"
 echo ""
@@ -154,28 +170,70 @@ echo -e "${BLUE}═════════════════════�
 echo -e "${YELLOW}Launch interactive dashboard? (Recommended)${NC}"
 echo -e "${BLUE}═════════════════════════════════════════════${NC}"
 echo ""
-echo -e "  ${GREEN}1)${NC} Yes - Launch colorful dashboard (Rich UI)"
-echo -e "  ${YELLOW}2)${NC} No  - Show plain log output"
+echo -e "  ${GREEN}1)${NC} Yes - Dashboard in new window (detached)"
+echo -e "  ${GREEN}2)${NC} Yes - Dashboard in this terminal"
+echo -e "  ${YELLOW}3)${NC} No  - Show plain log output"
 echo ""
 read -p "Choice [1]: " choice
 choice=${choice:-1}
 
 echo ""
 
+# Install Python rich library if needed
+if ! python3 -c "import rich" 2>/dev/null; then
+    echo -e "${BLUE}📦 Installing dashboard dependencies...${NC}"
+    python3 -m pip install rich requests -q
+    echo ""
+fi
+
 if [ "$choice" = "1" ]; then
+    echo -e "${GREEN}🎨 Launching Dashboard in new window...${NC}"
+    echo ""
+    
+    # Try to find a terminal emulator
+    TERM_CMD=""
+    if command -v gnome-terminal &> /dev/null; then
+        TERM_CMD="gnome-terminal --title='LitReview Dashboard' -- bash -c"
+    elif command -v konsole &> /dev/null; then
+        TERM_CMD="konsole --title 'LitReview Dashboard' -e bash -c"
+    elif command -v xterm &> /dev/null; then
+        TERM_CMD="xterm -title 'LitReview Dashboard' -e bash -c"
+    elif command -v x-terminal-emulator &> /dev/null; then
+        TERM_CMD="x-terminal-emulator -e bash -c"
+    fi
+    
+    if [ -n "$TERM_CMD" ]; then
+        $TERM_CMD "cd '$SCRIPT_DIR' && python3 dashboard.py; exec bash" &
+        echo -e "${GREEN}✓ Dashboard launched in new window${NC}"
+        echo -e "${BLUE}  If window doesn't appear, run manually: python3 dashboard.py${NC}"
+    else
+        echo -e "${YELLOW}⚠️  No terminal emulator found, running in current terminal...${NC}"
+        sleep 1
+        python3 dashboard.py
+    fi
+    
+    echo ""
+    echo -e "${GREEN}════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}✨ LitReview is RUNNING!${NC}"
+    echo -e "${GREEN}════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${BLUE}👉 Next steps:${NC}"
+    echo -e "   1. Check the Dashboard window for live monitoring"
+    echo -e "   2. Open ${YELLOW}http://localhost:3000${NC} in your browser"
+    echo -e "   3. Start your first literature review!"
+    echo ""
+    echo -e "${BLUE}💡 Tip:${NC} Keep the dashboard open to monitor pipeline progress"
+    echo ""
+    
+elif [ "$choice" = "2" ]; then
     echo -e "${GREEN}🎨 Launching Dashboard...${NC}"
     echo ""
     sleep 1
     
-    # Install Python rich library if needed
-    if ! python3 -c "import rich" 2>/dev/null; then
-        echo -e "${BLUE}Installing dashboard dependencies...${NC}"
-        python3 -m pip install rich requests -q
-    fi
-    
-    # Launch dashboard
+    # Launch dashboard in current terminal
     python3 dashboard.py
-else
+    
+elif [ "$choice" = "3" ]; then
     echo -e "${BLUE}Showing combined logs (Ctrl+C to exit):${NC}"
     echo ""
     

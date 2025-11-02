@@ -159,6 +159,23 @@ litreview-app/
 
 ---
 
+## 🤖 AI Pair Programming
+
+This project is developed using **AI-Human Pair Programming** with the MARKO framework:
+- **AI (Claude)**: Autonomous coding agent - implements, tests, commits, and pushes
+- **Human (Mei)**: Product owner and reviewer - guides direction and approves changes
+
+See [AI_PAIR_PROGRAMMING.md](./AI_PAIR_PROGRAMMING.md) for detailed workflow.
+
+### Key Features
+- ✅ Autonomous development with human oversight
+- ✅ Comprehensive testing and monitoring
+- ✅ MARKO-driven architecture (Single Source of Truth)
+- ✅ Full git traceability with co-authorship
+- ✅ Self-healing through automated testing and log analysis
+
+---
+
 ## 🔧 Configuration
 
 ### Environment Variables

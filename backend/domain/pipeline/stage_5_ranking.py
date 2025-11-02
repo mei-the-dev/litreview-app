@@ -83,6 +83,9 @@ async def execute(session_id: str, papers: List[Paper]) -> List[Paper]:
                 }
                 for i, p in enumerate(ranked_papers[:10])
             ]
+        },
+        data={
+            "ranked_papers": [p.model_dump() for p in ranked_papers]
         }
     )
     

@@ -1,0 +1,152 @@
+{
+  "project": "LitReview Navigation Fix",
+  "version": "1.0.0",
+  "created": "2025-11-02",
+  "objective": "Fix stage 7 completion not triggering navigation to results view",
+  
+  "root_cause_analysis": {
+    "issue": "When stage 7 completes, frontend does not navigate to results view",
+    "symptoms": [
+      "Stage 7 completion event is sent by backend",
+      "Frontend receives WebSocket message",
+      "setPdfPath() is called which sets currentView: 'results'",
+      "But navigation doesn't happen in UI"
+    ],
+    "discovered_issues": [
+      {
+        "issue_1": "Data structure mismatch",
+        "description": "send_stage_complete sends 'result' but frontend expects 'data' for papers/themes/methodologies",
+        "affected_stages": [1, 3, 4, 5, 6],
+        "files": [
+          "backend/core/websocket_manager.py",
+          "frontend/src/hooks/useWebSocket.ts"
+        ]
+      },
+      {
+        "issue_2": "Stage 6 report data not sent",
+        "description": "Stage 6 completion doesn't include the actual report object",
+        "affected_stages": [6],
+        "files": ["backend/domain/pipeline/stage_6_synthesis.py"]
+      },
+      {
+        "issue_3": "Stage completion data incomplete",
+        "description": "Stages send summary info but not full data structures needed by frontend",
+        "affected_stages": [1, 3, 4, 5],
+        "files": ["backend/domain/pipeline/stage_*.py"]
+      }
+    ]
+  },
+  
+  "solution_approach": {
+    "strategy": "Fix WebSocket data flow to include complete data structures",
+    "changes": [
+      {
+        "change_1": "Add data parameter to send_stage_complete",
+        "file": "backend/core/websocket_manager.py",
+        "action": "Modify send_stage_complete to accept optional data parameter"
+      },
+      {
+        "change_2": "Update all stages to send complete data",
+        "files": [
+          "backend/domain/pipeline/stage_1_fetch.py",
+          "backend/domain/pipeline/stage_3_theme_clustering.py",
+          "backend/domain/pipeline/stage_4_methodology.py",
+          "backend/domain/pipeline/stage_5_ranking.py",
+          "backend/domain/pipeline/stage_6_synthesis.py",
+          "backend/domain/pipeline/stage_7_pdf.py"
+        ],
+        "action": "Include full data structures in completion messages"
+      },
+      {
+        "change_3": "Ensure frontend properly handles stage 7 completion",
+        "file": "frontend/src/hooks/useWebSocket.ts",
+        "action": "Verify setPdfPath triggers view change and add console logging"
+      },
+      {
+        "change_4": "Add navigation debugging",
+        "file": "frontend/src/stores/pipelineStore.ts",
+        "action": "Add console.log to track view changes"
+      }
+    ]
+  },
+  
+  "implementation_plan": {
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Update WebSocket Manager",
+        "tasks": [
+          "Modify send_stage_complete to include optional data parameter",
+          "Ensure backward compatibility with existing calls"
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Update Pipeline Stages",
+        "tasks": [
+          "Stage 1: Send all papers in data.papers",
+          "Stage 3: Send themes dictionary in data.themes",
+          "Stage 4: Send methodologies dictionary in data.methodologies",
+          "Stage 5: Send ranked papers in data.ranked_papers",
+          "Stage 6: Send full report object in data.report",
+          "Stage 7: Ensure pdf_path is in result (already correct)"
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Add Debug Logging",
+        "tasks": [
+          "Add console.log in useWebSocket for stage 7 completion",
+          "Add console.log in pipelineStore.setPdfPath",
+          "Add console.log in App.tsx when currentView changes"
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Test Navigation Flow",
+        "tasks": [
+          "Run full pipeline",
+          "Monitor WebSocket messages in browser console",
+          "Verify view switches to results after stage 7",
+          "Verify all result data is available"
+        ]
+      }
+    ]
+  },
+  
+  "testing_strategy": {
+    "unit_tests": {
+      "backend": [
+        "Test websocket_manager.send_stage_complete with data parameter",
+        "Test each stage sends correct data structure"
+      ],
+      "frontend": [
+        "Test useWebSocket handles stage_complete with data",
+        "Test pipelineStore.setPdfPath switches view"
+      ]
+    },
+    "integration_tests": [
+      "Full pipeline run with WebSocket monitoring",
+      "Verify navigation occurs after stage 7",
+      "Verify all tabs in results view have data"
+    ],
+    "e2e_tests": [
+      "Complete pipeline execution",
+      "Automatic navigation to results",
+      "All result tabs display data correctly"
+    ]
+  },
+  
+  "success_criteria": [
+    "Stage 7 completion triggers automatic navigation to results view",
+    "All pipeline data is available in results view (papers, themes, methodologies, rankings, report, PDF)",
+    "Navigation is smooth with no manual intervention needed",
+    "All existing tests still pass",
+    "New tests verify navigation flow"
+  ],
+  
+  "rollback_plan": {
+    "if_failed": "Revert WebSocket manager and stage changes",
+    "backup": "Current working state with manual navigation"
+  }
+}

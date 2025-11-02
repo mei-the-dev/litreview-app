@@ -72,3 +72,19 @@ async def get_pipeline_result(session_id: str):
         raise HTTPException(status_code=500, detail=pipeline.get("error", "Pipeline failed"))
     
     return pipeline["result"]
+
+
+@router.get("/events/{session_id}")
+async def get_pipeline_events(session_id: str, limit: int = 100):
+    """Get recent pipeline events for debugging"""
+    from backend.core.websocket_manager import manager
+    events = manager.get_recent_events(session_id=session_id, limit=limit)
+    return {"session_id": session_id, "events": events, "count": len(events)}
+
+
+@router.get("/events")
+async def get_all_events(limit: int = 100):
+    """Get all recent pipeline events"""
+    from backend.core.websocket_manager import manager
+    events = manager.get_recent_events(limit=limit)
+    return {"events": events, "count": len(events)}

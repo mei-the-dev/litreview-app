@@ -1,0 +1,159 @@
+{
+  "marko": {
+    "title": "GPU Optimization for Literature Review Pipeline",
+    "version": "1.0.0",
+    "created": "2025-11-02",
+    "objective": "Optimize local model usage to always use GPU (NVIDIA RTX 3060 12GB) and select better models for the academic literature review tasks",
+    "context": {
+      "current_state": {
+        "gpu": "NVIDIA GeForce RTX 3060 with 12GB VRAM",
+        "current_models": [
+          "sentence-transformers/all-MiniLM-L6-v2 (embeddings)",
+          "facebook/bart-large-cnn (summarization)"
+        ],
+        "issue": "Models configured to use CPU (device=-1) instead of GPU",
+        "stage_6_stuck": "Synthesis stage is slow due to CPU-based summarization"
+      },
+      "requirements": {
+        "use_gpu_always": true,
+        "better_model_selection": true,
+        "vram_constraint": "12GB",
+        "tasks": [
+          "embeddings generation",
+          "text summarization",
+          "relevance scoring",
+          "theme clustering"
+        ]
+      }
+    },
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Model Selection and Configuration",
+        "tasks": [
+          {
+            "task": "1.1",
+            "description": "Research and select optimal models for RTX 3060 12GB",
+            "models_to_evaluate": {
+              "embeddings": {
+                "current": "all-MiniLM-L6-v2 (80MB, 384 dim)",
+                "better_options": [
+                  "all-mpnet-base-v2 (420MB, 768 dim, higher quality)",
+                  "all-MiniLM-L12-v2 (120MB, 384 dim, balanced)"
+                ],
+                "recommendation": "all-mpnet-base-v2 for better quality with plenty of VRAM"
+              },
+              "summarization": {
+                "current": "facebook/bart-large-cnn (1.6GB)",
+                "better_options": [
+                  "google/pegasus-xsum (2.3GB, specialized for academic abstracts)",
+                  "facebook/bart-large-cnn (1.6GB, good general purpose)",
+                  "sshleifer/distilbart-cnn-12-6 (1.2GB, faster, good quality)"
+                ],
+                "recommendation": "facebook/bart-large-cnn (keep) but move to GPU"
+              },
+              "text_generation": {
+                "options": [
+                  "microsoft/phi-2 (2.7GB, 2.7B params, excellent reasoning)",
+                  "TinyLlama/TinyLlama-1.1B-Chat-v1.0 (2.2GB, fast)",
+                  "stabilityai/stablelm-2-zephyr-1_6b (3.2GB, high quality)"
+                ],
+                "recommendation": "microsoft/phi-2 for synthesis insights"
+              }
+            }
+          },
+          {
+            "task": "1.2",
+            "description": "Update huggingface_client.py for GPU usage",
+            "changes": [
+              "Detect GPU availability using torch.cuda.is_available()",
+              "Set device to 'cuda' if available, else 'cpu'",
+              "Add device parameter to model loading",
+              "Add VRAM monitoring and warnings",
+              "Enable mixed precision (FP16) for larger batch sizes"
+            ]
+          },
+          {
+            "task": "1.3",
+            "description": "Add GPU configuration to settings",
+            "changes": [
+              "Add use_gpu flag to config.py",
+              "Add preferred_embedding_model setting",
+              "Add preferred_summarization_model setting",
+              "Add enable_fp16 flag for mixed precision"
+            ]
+          }
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Implementation",
+        "tasks": [
+          {
+            "task": "2.1",
+            "description": "Update config.py with GPU settings",
+            "file": "backend/core/config.py"
+          },
+          {
+            "task": "2.2",
+            "description": "Refactor huggingface_client.py with GPU support",
+            "file": "backend/infrastructure/ai/huggingface_client.py",
+            "key_changes": [
+              "Add GPU detection and device selection",
+              "Update model loading to use GPU",
+              "Add model warming for faster first inference",
+              "Add VRAM usage logging",
+              "Implement batch processing for embeddings"
+            ]
+          },
+          {
+            "task": "2.3",
+            "description": "Update requirements.txt if needed",
+            "file": "backend/requirements.txt"
+          }
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Testing and Validation",
+        "tasks": [
+          {
+            "task": "3.1",
+            "description": "Verify GPU is being used",
+            "validation": [
+              "Run nvidia-smi during pipeline execution",
+              "Check GPU memory usage increases",
+              "Verify speed improvement in stage 6"
+            ]
+          },
+          {
+            "task": "3.2",
+            "description": "Run full pipeline test",
+            "test_cases": [
+              "Small query (5-10 papers)",
+              "Medium query (20-30 papers)",
+              "Check stage 6 completion time"
+            ]
+          },
+          {
+            "task": "3.3",
+            "description": "Update monitoring dashboard",
+            "enhancement": "Add GPU usage metrics to dashboard"
+          }
+        ]
+      }
+    ],
+    "success_criteria": [
+      "Models load on GPU (CUDA device)",
+      "Stage 6 synthesis completes without hanging",
+      "GPU memory usage visible in nvidia-smi",
+      "Performance improvement of 3-10x for summarization",
+      "All existing tests pass"
+    ],
+    "rollback_plan": {
+      "if_gpu_issues": "Automatic fallback to CPU mode preserved",
+      "if_vram_exceeded": "Use distilbart instead of bart-large",
+      "if_model_load_fails": "Keep current all-MiniLM-L6-v2"
+    }
+  }
+}

@@ -87,7 +87,7 @@ The papers were classified into {len(themes)} thematic clusters and {len(methodo
         session_id,
         stage=6,
         progress=80,
-        message="Generating AI insights..."
+        message="Generating AI insights (loading model, may take 1-2 minutes first time)..."
     )
     
     try:
@@ -96,11 +96,50 @@ The papers were classified into {len(themes)} thematic clusters and {len(methodo
             p.abstract for p in papers[:5] if p.abstract
         ])
         if top_abstracts:
+            await manager.send_stage_update(
+                session_id,
+                stage=6,
+                progress=85,
+                message=f"Running summarization model on {len(top_abstracts)} chars of abstracts..."
+            )
             ai_summary = await hf_client.summarize(top_abstracts[:2000], max_length=200)
+            await manager.send_stage_update(
+                session_id,
+                stage=6,
+                progress=90,
+                message="AI summary generated successfully"
+            )
             insights_section = f"\n## Key Insights\n\n{ai_summary}\n"
             synthesis_parts.append(insights_section)
+        else:
+            await manager.send_stage_update(
+                session_id,
+                stage=6,
+                progress=85,
+                message="No abstracts available for AI summarization, using manual insights"
+            )
     except Exception as e:
-        print(f"Could not generate AI summary: {e}")
+        error_msg = str(e)
+        print(f"Could not generate AI summary: {error_msg}")
+        await manager.send_stage_update(
+            session_id,
+            stage=6,
+            progress=85,
+            message=f"AI summarization failed ({error_msg[:100]}), using manual insights"
+        )
+        # Add a manual insights section if AI fails
+        insights_section = "\n## Key Insights\n\n"
+        insights_section += f"This review covers {len(papers)} papers across {len(themes)} thematic areas. "
+        insights_section += f"The most common methodological approach is {max(methodologies.items(), key=lambda x: len(x[1]))[0]} "
+        insights_section += f"with {len(max(methodologies.items(), key=lambda x: len(x[1]))[1])} papers.\n"
+        synthesis_parts.append(insights_section)
+    
+    await manager.send_stage_update(
+        session_id,
+        stage=6,
+        progress=95,
+        message="Finalizing report structure..."
+    )
     
     # Combine all sections
     full_synthesis = "\n".join(synthesis_parts)
@@ -127,6 +166,9 @@ The papers were classified into {len(themes)} thematic clusters and {len(methodo
             "report_generated": True,
             "sections": len(synthesis_parts),
             "total_length": len(full_synthesis)
+        },
+        data={
+            "report": report.model_dump()
         }
     )
     

@@ -96,7 +96,11 @@ export const usePipelineStore = create<PipelineState>((set) => ({
   
   setReport: (report) => set({ report }),
   
-  setPdfPath: (path) => set({ pdfPath, isRunning: false, currentView: 'results' }),
+  setPdfPath: (path) => {
+    console.log('✅ setPdfPath called with:', path);
+    set({ pdfPath: path, isRunning: false, currentView: 'results' });
+    console.log('✅ Navigation: Switched to results view');
+  },
   
   setError: (error) => set({ error, isRunning: false }),
   
