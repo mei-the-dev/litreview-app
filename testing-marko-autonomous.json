@@ -1,0 +1,443 @@
+{
+  "marko_version": "5.0.0",
+  "title": "LitReview - Autonomous Testing, Monitoring, Debugging & Fixing",
+  "description": "MARKO for autonomous agent to test, monitor, debug and fix the LitReview application without human intervention",
+  "parent_marko": "marko.json",
+  "purpose": "Enable Claude agent to autonomously test, identify issues, debug, and fix problems in the LitReview application",
+  
+  "test_philosophy": {
+    "core_principle": "Tests should catch real runtime errors, not just pass for passing's sake",
+    "blind_spots": [
+      "Tests pass but actual pipeline fails",
+      "Mock tests don't reflect real API behavior",
+      "Format string errors slip through string-based tests",
+      "WebSocket tests don't verify actual message content",
+      "E2E tests check file existence but not functionality"
+    ],
+    "solution": "Run actual pipeline with real data and monitor logs for runtime errors"
+  },
+  
+  "testing_strategy": {
+    "test_pyramid": {
+      "level_1_unit_tests": {
+        "purpose": "Test individual functions and classes in isolation",
+        "coverage": ["domain/pipeline/*.py", "infrastructure/*.py", "api/models/*.py"],
+        "tools": ["pytest", "pytest-asyncio"],
+        "example_files": [
+          "tests/test_config.py",
+          "tests/test_websocket.py"
+        ]
+      },
+      "level_2_integration_tests": {
+        "purpose": "Test interactions between components",
+        "coverage": ["API endpoints", "Database operations", "External API calls"],
+        "tools": ["pytest", "httpx", "TestClient"],
+        "example_files": [
+          "tests/test_api_health.py",
+          "tests/test_api_monitoring.py"
+        ]
+      },
+      "level_3_e2e_tests": {
+        "purpose": "Test complete user workflows with REAL data and REAL execution",
+        "coverage": ["Full pipeline execution", "WebSocket updates", "File generation"],
+        "tools": ["pytest", "asyncio", "websockets"],
+        "critical_requirement": "MUST run actual pipeline, not mocks"
+      }
+    }
+  },
+  
+  "error_detection_system": {
+    "log_monitoring": {
+      "log_locations": [
+        "logs/backend.log",
+        "logs/frontend.log",
+        "logs/pipeline/*.log"
+      ],
+      "error_patterns": [
+        "ERROR:",
+        "Traceback",
+        "Exception:",
+        "failed",
+        "400 Bad Request",
+        "401 Unauthorized",
+        "404 Not Found",
+        "500 Internal Server Error",
+        "KeyError:",
+        "AttributeError:",
+        "TypeError:",
+        "ValueError:",
+        "Invalid format specifier"
+      ],
+      "monitoring_command": "tail -f logs/backend.log | grep -E '(ERROR|Exception|Traceback|failed)'"
+    },
+    
+    "runtime_error_detection": {
+      "method": "Execute pipeline and capture all output",
+      "test_workflow": [
+        "1. Start services (backend + frontend)",
+        "2. Run full pipeline with test query",
+        "3. Monitor logs in real-time",
+        "4. Check pipeline status endpoint",
+        "5. Verify all 7 stages completed successfully",
+        "6. Check generated output files exist and are valid",
+        "7. Parse logs for any errors/exceptions"
+      ]
+    }
+  },
+  
+  "blind_spot_analysis": {
+    "issue_1_format_string_errors": {
+      "problem": "Python f-string format specifiers with conditionals fail at runtime",
+      "example": "f'{value:.3f if value else \"N/A\"}' - INVALID",
+      "correct": "f'{value:.3f}' if value else 'N/A'",
+      "detection": "Run actual code, not just syntax checks",
+      "test_approach": "Execute pipeline stages with real data"
+    },
+    
+    "issue_2_api_errors": {
+      "problem": "External API calls fail with 400/401/503 but tests pass",
+      "examples": [
+        "HuggingFace API returns 400 Bad Request",
+        "Semantic Scholar rate limiting",
+        "Invalid API key format"
+      ],
+      "detection": "Make actual API calls in tests, not mocks",
+      "fallback_verification": "Ensure local model fallback works"
+    },
+    
+    "issue_3_stage_failures": {
+      "problem": "Individual stages fail but overall test suite passes",
+      "root_cause": "Tests check preconditions but not execution results",
+      "solution": "Run complete pipeline end-to-end with assertions on each stage"
+    },
+    
+    "issue_4_websocket_updates": {
+      "problem": "WebSocket connection works but messages don't arrive",
+      "detection": "Connect to WebSocket and verify message content",
+      "test_requirements": [
+        "Verify connection established",
+        "Verify stage updates received for all 7 stages",
+        "Verify error messages propagate correctly"
+      ]
+    }
+  },
+  
+  "autonomous_testing_workflow": {
+    "step_1_baseline_check": {
+      "actions": [
+        "Run all existing tests: pytest -v",
+        "Note which tests pass/fail",
+        "Identify test coverage gaps"
+      ]
+    },
+    
+    "step_2_start_services": {
+      "actions": [
+        "Execute: ./run.sh (starts backend + frontend)",
+        "Wait 10 seconds for services to initialize",
+        "Verify processes running: ps aux | grep -E '(python|node)'"
+      ]
+    },
+    
+    "step_3_execute_real_pipeline": {
+      "actions": [
+        "Make real API call to /api/pipeline/start",
+        "Use test query: {\"keywords\": [\"machine learning\"], \"max_papers\": 5}",
+        "Capture session_id from response",
+        "Poll /api/pipeline/status/{session_id} every 5 seconds",
+        "Wait for status 'completed' or 'failed' (max 120 seconds)"
+      ],
+      "assertions": [
+        "Status should be 'completed', not 'failed'",
+        "No 'error' field in response",
+        "All 7 stages should complete"
+      ]
+    },
+    
+    "step_4_analyze_logs": {
+      "actions": [
+        "Read logs/backend.log",
+        "Search for error patterns",
+        "Identify stack traces",
+        "Extract error messages"
+      ],
+      "error_classification": {
+        "format_errors": "Invalid format specifier, f-string errors",
+        "api_errors": "400 Bad Request, 401 Unauthorized, API rate limit",
+        "logic_errors": "KeyError, AttributeError, IndexError",
+        "data_errors": "Invalid data format, missing required fields"
+      }
+    },
+    
+    "step_5_debug_identified_issues": {
+      "process": [
+        "For each error in logs:",
+        "1. Extract full stack trace",
+        "2. Identify file and line number",
+        "3. Read surrounding code context",
+        "4. Identify root cause",
+        "5. Determine minimal fix"
+      ]
+    },
+    
+    "step_6_implement_fixes": {
+      "guidelines": [
+        "Make MINIMAL changes only",
+        "Fix the specific error, don't refactor",
+        "Preserve existing logic and style",
+        "Add defensive checks if needed",
+        "Don't break other functionality"
+      ]
+    },
+    
+    "step_7_verify_fixes": {
+      "actions": [
+        "Restart services",
+        "Run pipeline again with same test query",
+        "Check logs for same error",
+        "If error persists, return to step 5",
+        "If error gone, proceed to next error",
+        "Run full test suite to ensure no regressions"
+      ]
+    },
+    
+    "step_8_write_regression_tests": {
+      "purpose": "Prevent fixed bugs from returning",
+      "approach": [
+        "Create test that would have caught the bug",
+        "Add to appropriate test file",
+        "Ensure test fails on old code, passes on new code",
+        "Run test suite to verify"
+      ]
+    }
+  },
+  
+  "test_file_improvements": {
+    "new_test_real_pipeline_execution": {
+      "file": "tests/test_real_pipeline_e2e.py",
+      "purpose": "Execute actual pipeline with real API calls",
+      "test_cases": [
+        {
+          "name": "test_full_pipeline_with_real_data",
+          "steps": [
+            "Start pipeline with test query",
+            "Wait for completion (max 120s)",
+            "Assert status is 'completed'",
+            "Assert no errors in response",
+            "Verify output files exist",
+            "Check logs for no ERROR messages"
+          ]
+        },
+        {
+          "name": "test_each_stage_completes",
+          "steps": [
+            "Execute pipeline",
+            "Monitor WebSocket for stage updates",
+            "Assert stage 1 completes (paper search)",
+            "Assert stage 2 completes (relevance scoring)",
+            "Assert stage 3 completes (theme grouping)",
+            "Assert stage 4 completes (methodology grouping)",
+            "Assert stage 5 completes (ranking)",
+            "Assert stage 6 completes (synthesis)",
+            "Assert stage 7 completes (PDF generation)"
+          ]
+        },
+        {
+          "name": "test_stage_6_format_string_fix",
+          "purpose": "Regression test for format string bug",
+          "steps": [
+            "Execute pipeline to stage 6",
+            "Verify no 'Invalid format specifier' error",
+            "Check synthesis report contains 'Relevance Score' field",
+            "Verify score formatted correctly or shows 'N/A'"
+          ]
+        }
+      ]
+    },
+    
+    "enhanced_api_monitoring": {
+      "file": "tests/test_api_monitoring.py",
+      "additions": [
+        {
+          "name": "test_huggingface_embedding_actual_call",
+          "purpose": "Verify HF API works or fallback succeeds",
+          "steps": [
+            "Call hf_client.get_embeddings() with test text",
+            "Assert returns list of embeddings",
+            "Verify embedding dimensions correct (384 for MiniLM)",
+            "Check logs for API errors or fallback messages"
+          ]
+        },
+        {
+          "name": "test_semantic_scholar_actual_search",
+          "purpose": "Verify SS API works with real query",
+          "steps": [
+            "Search for 'machine learning'",
+            "Assert at least 1 paper returned",
+            "Verify paper has required fields (title, authors, abstract)",
+            "Check for rate limit errors"
+          ]
+        }
+      ]
+    }
+  },
+  
+  "autonomous_agent_commands": {
+    "check_current_state": {
+      "command": "ps aux | grep -E '(python.*main.py|node.*vite)' | grep -v grep",
+      "purpose": "Verify services are running"
+    },
+    
+    "start_services": {
+      "command": "./run.sh",
+      "mode": "detached",
+      "wait": 10,
+      "verify": "curl -s http://localhost:8000/health | jq .status"
+    },
+    
+    "stop_services": {
+      "command": "./stop.sh",
+      "wait": 5
+    },
+    
+    "run_tests": {
+      "command": "cd backend && source venv/bin/activate && pytest -v --tb=short",
+      "timeout": 120
+    },
+    
+    "test_pipeline": {
+      "command": "curl -X POST http://localhost:8000/api/pipeline/start -H 'Content-Type: application/json' -d '{\"keywords\": [\"machine learning\"], \"max_papers\": 5}' -s | jq .",
+      "capture": "session_id",
+      "follow_up": "curl -s http://localhost:8000/api/pipeline/status/{session_id} | jq ."
+    },
+    
+    "check_logs": {
+      "command": "tail -100 logs/backend.log | grep -E '(ERROR|Exception|Traceback|failed|Invalid)' -A 5",
+      "purpose": "Find runtime errors"
+    },
+    
+    "monitor_pipeline": {
+      "command": "SESSION_ID='{session_id}'; while true; do STATUS=$(curl -s http://localhost:8000/api/pipeline/status/$SESSION_ID | jq -r .status); echo \"Status: $STATUS\"; [[ \"$STATUS\" =~ ^(completed|failed)$ ]] && break; sleep 5; done; curl -s http://localhost:8000/api/pipeline/status/$SESSION_ID | jq .",
+      "purpose": "Wait for pipeline completion"
+    }
+  },
+  
+  "debugging_checklist": {
+    "when_tests_pass_but_app_fails": [
+      "✓ Run actual pipeline with curl/httpx, not test client",
+      "✓ Check logs/backend.log for runtime errors",
+      "✓ Verify all external APIs (HF, Semantic Scholar) work",
+      "✓ Test WebSocket connection and messages",
+      "✓ Check generated files exist and are valid",
+      "✓ Run dashboard.py to see system health",
+      "✓ Look for format string errors in synthesis code",
+      "✓ Verify fallback mechanisms work (local models)",
+      "✓ Check for async/await issues",
+      "✓ Validate data models (Pydantic schemas)"
+    ],
+    
+    "common_bug_patterns": {
+      "pattern_1": {
+        "symptom": "Invalid format specifier error",
+        "location": "f-strings with conditionals inside format spec",
+        "fix": "Move conditional outside format spec"
+      },
+      "pattern_2": {
+        "symptom": "400 Bad Request from HuggingFace",
+        "location": "infrastructure/ai/huggingface_client.py",
+        "fix": "Verify API token, check request format, ensure fallback works"
+      },
+      "pattern_3": {
+        "symptom": "Pipeline status 'failed' with no details",
+        "location": "domain/pipeline_orchestrator.py error handling",
+        "fix": "Check logs for stack trace, add more error context"
+      },
+      "pattern_4": {
+        "symptom": "WebSocket closes immediately",
+        "location": "WebSocket connection handling",
+        "fix": "Check CORS, verify connection manager, check frontend code"
+      }
+    }
+  },
+  
+  "success_criteria": {
+    "all_tests_must_pass": {
+      "unit_tests": "pytest tests/ -k 'not e2e' passes 100%",
+      "integration_tests": "pytest tests/test_api*.py passes 100%",
+      "e2e_tests": "pytest tests/test_e2e.py passes 100%",
+      "real_pipeline": "pytest tests/test_real_pipeline_e2e.py passes 100%"
+    },
+    
+    "no_errors_in_logs": {
+      "check": "grep -E '(ERROR|Exception|Traceback)' logs/backend.log should return empty",
+      "exception": "Allowed: 'HF API failed, falling back to local' (expected fallback)"
+    },
+    
+    "pipeline_completes_successfully": {
+      "test_query": "{\"keywords\": [\"machine learning\"], \"max_papers\": 5}",
+      "expected_status": "completed",
+      "expected_stages": 7,
+      "expected_outputs": [
+        "backend/output/literature_review_*.pdf",
+        "Pipeline status shows all stages complete"
+      ]
+    },
+    
+    "external_apis_work_or_fallback": {
+      "huggingface": "Either API works OR local model fallback succeeds",
+      "semantic_scholar": "API must work (no fallback available)"
+    }
+  },
+  
+  "maintenance_notes": {
+    "when_adding_new_features": [
+      "Add tests BEFORE implementation (TDD)",
+      "Test with real data, not just mocks",
+      "Add monitoring/logging for new stages",
+      "Update this MARKO with new test patterns",
+      "Run full test suite before commit"
+    ],
+    
+    "when_fixing_bugs": [
+      "Add regression test that would catch the bug",
+      "Fix with minimal changes",
+      "Verify fix with actual pipeline execution",
+      "Check logs show no new errors",
+      "Update test documentation"
+    ]
+  },
+  
+  "agent_iteration_pattern": {
+    "iterate_until_success": {
+      "max_iterations": 10,
+      "per_iteration": [
+        "1. Run tests and pipeline",
+        "2. Check logs for errors",
+        "3. If errors found: debug and fix",
+        "4. If no errors: verify success criteria",
+        "5. If success criteria met: DONE",
+        "6. If not met but no errors: enhance tests",
+        "7. Repeat"
+      ],
+      "exit_conditions": [
+        "All tests pass AND",
+        "Pipeline executes successfully AND",
+        "No errors in logs (except allowed fallback messages) AND",
+        "Output files generated correctly"
+      ]
+    }
+  },
+  
+  "reference_marko_usage": {
+    "leverage_sso_marko": {
+      "purpose": "Use single source of truth (marko.json) for consistency",
+      "key_info": [
+        "Tech stack versions from marko.json",
+        "API endpoints from marko.json",
+        "Architecture decisions from marko.json",
+        "Dependency versions from marko.json"
+      ],
+      "consistency_rule": "Don't contradict parent marko.json, extend it"
+    }
+  }
+}

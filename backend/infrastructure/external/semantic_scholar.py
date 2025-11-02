@@ -82,3 +82,8 @@ class SemanticScholarClient:
                 )
             except httpx.HTTPError:
                 return None
+
+
+# Global instance
+semantic_scholar = SemanticScholarClient()
+

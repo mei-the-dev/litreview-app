@@ -74,7 +74,8 @@ The papers were classified into {len(themes)} thematic clusters and {len(methodo
         top_section += f"- Authors: {', '.join(paper.authors[:3])}{' et al.' if len(paper.authors) > 3 else ''}\n"
         top_section += f"- Year: {paper.year or 'n.d.'}\n"
         top_section += f"- Citations: {paper.citation_count}\n"
-        top_section += f"- Relevance Score: {paper.relevance_score:.3f if paper.relevance_score else 'N/A'}\n"
+        relevance_display = f"{paper.relevance_score:.3f}" if paper.relevance_score is not None else "N/A"
+        top_section += f"- Relevance Score: {relevance_display}\n"
         if paper.url:
             top_section += f"- URL: {paper.url}\n"
         top_section += "\n"
