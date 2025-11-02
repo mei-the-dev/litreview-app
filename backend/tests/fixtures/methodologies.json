@@ -1,0 +1,93 @@
+{
+  "Survey": [
+    {
+      "paper_id": "p1",
+      "title": "Deep Learning for Natural Language Processing: A Survey",
+      "abstract": "This paper surveys recent advances in deep learning methods for natural language processing tasks. We cover neural architectures including RNNs, LSTMs, and Transformers, and their applications in translation, summarization, and question answering.",
+      "authors": [
+        "John Smith",
+        "Jane Doe",
+        "Bob Johnson"
+      ],
+      "year": 2023,
+      "citation_count": 450,
+      "url": "https://example.com/paper1",
+      "venue": "ACL 2023",
+      "relevance_score": 0.95,
+      "theme": "Deep Learning",
+      "methodology": "Survey",
+      "final_rank": 1
+    },
+    {
+      "paper_id": "p4",
+      "title": "Reinforcement Learning in Robotics: Current Trends",
+      "abstract": "We review recent developments in applying reinforcement learning to robotics applications. Topics include sim-to-real transfer, multi-agent systems, and safety-critical control.",
+      "authors": [
+        "Henry Wilson",
+        "Ivy Chen"
+      ],
+      "year": 2023,
+      "citation_count": 250,
+      "url": "https://example.com/paper4",
+      "venue": "IROS 2023",
+      "relevance_score": 0.79,
+      "theme": "Reinforcement Learning",
+      "methodology": "Survey",
+      "final_rank": 4
+    }
+  ],
+  "Experimental": [
+    {
+      "paper_id": "p2",
+      "title": "Transformer Models in Computer Vision",
+      "abstract": "We explore the application of transformer architectures, originally designed for NLP, to computer vision tasks. Our experiments show state-of-the-art results on image classification and object detection.",
+      "authors": [
+        "Alice Wang",
+        "Charlie Brown"
+      ],
+      "year": 2022,
+      "citation_count": 320,
+      "url": "https://example.com/paper2",
+      "venue": "CVPR 2022",
+      "relevance_score": 0.88,
+      "theme": "Computer Vision",
+      "methodology": "Experimental",
+      "final_rank": 2
+    },
+    {
+      "paper_id": "p3",
+      "title": "Meta-Learning for Few-Shot Classification",
+      "abstract": "This work presents a novel meta-learning approach for few-shot classification tasks. We demonstrate that our method achieves superior performance with limited training data across multiple domains.",
+      "authors": [
+        "Emma Davis",
+        "Frank Miller",
+        "Grace Lee"
+      ],
+      "year": 2023,
+      "citation_count": 180,
+      "url": "https://example.com/paper3",
+      "venue": "ICML 2023",
+      "relevance_score": 0.82,
+      "theme": "Meta-Learning",
+      "methodology": "Experimental",
+      "final_rank": 3
+    },
+    {
+      "paper_id": "p5",
+      "title": "Graph Neural Networks for Molecular Property Prediction",
+      "abstract": "This paper introduces a graph neural network architecture specifically designed for predicting molecular properties. We achieve state-of-the-art results on benchmark datasets.",
+      "authors": [
+        "Jack Taylor",
+        "Kate Anderson"
+      ],
+      "year": 2022,
+      "citation_count": 190,
+      "url": "https://example.com/paper5",
+      "venue": "NeurIPS 2022",
+      "relevance_score": 0.75,
+      "theme": "Graph Neural Networks",
+      "methodology": "Experimental",
+      "final_rank": 5
+    }
+  ]
+}
