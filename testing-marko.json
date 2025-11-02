@@ -1,0 +1,710 @@
+{
+  "marko_version": "5.1.0",
+  "title": "LitReview - Autonomous Testing, Monitoring, Debugging & Fixing System",
+  "description": "Comprehensive MARKO specification for autonomous test-driven development, real-time error detection, log analysis, and self-healing capabilities. Designed to work with the main LitReview MARKO (marko.json) as a specialized testing subsystem.",
+  
+  "relationship_to_main_marko": {
+    "type": "specialized_subsystem",
+    "parent_marko": "marko.json",
+    "scope": "Testing, monitoring, debugging, and autonomous fixing",
+    "integration": "References parent MARKO for architecture, but adds testing-specific requirements",
+    "principle": "Single source of truth - this MARKO is authoritative for all testing/debugging decisions"
+  },
+
+  "testing_philosophy": {
+    "core_principles": [
+      "Tests must detect ACTUAL problems, not just absence of crashes",
+      "Fallback mechanisms are DEGRADED states, not success states",
+      "Log analysis is part of test validation",
+      "Tests should catch issues before humans notice them",
+      "Autonomous agents should be able to debug and fix using test output"
+    ],
+    
+    "test_pyramid": {
+      "unit_tests": {
+        "percentage": 60,
+        "speed": "< 0.5s total",
+        "isolation": "Fully mocked, no external dependencies",
+        "purpose": "Fast iteration, component validation"
+      },
+      "integration_tests": {
+        "percentage": 30,
+        "speed": "< 5s total",
+        "isolation": "Real internal components, mocked external APIs",
+        "purpose": "Component interaction validation"
+      },
+      "e2e_tests": {
+        "percentage": 10,
+        "speed": "< 30s total",
+        "isolation": "Real everything, production-like",
+        "purpose": "Full system validation, catch integration issues"
+      }
+    },
+    
+    "test_quality_gates": {
+      "must_catch": [
+        "API failures (even with fallback)",
+        "Degraded performance (slow responses)",
+        "Configuration errors",
+        "Resource exhaustion",
+        "Data corruption",
+        "Memory leaks",
+        "Race conditions",
+        "Security vulnerabilities"
+      ],
+      "must_not": [
+        "Pass when fallback is used (should be degraded state)",
+        "Pass when logs show errors",
+        "Pass when performance degrades",
+        "Pass when resources are exhausted"
+      ]
+    }
+  },
+
+  "error_detection_strategy": {
+    "levels": [
+      {
+        "level": 1,
+        "name": "Test Failures",
+        "detection": "pytest assertion failures",
+        "severity": "high",
+        "action": "Block deployment, require fix"
+      },
+      {
+        "level": 2,
+        "name": "Log Errors",
+        "detection": "Error/exception in logs during test run",
+        "severity": "high",
+        "action": "Mark test as warning, investigate immediately",
+        "patterns": [
+          "ERROR:",
+          "Exception:",
+          "Traceback:",
+          "failed",
+          "Bad Request",
+          "Connection refused",
+          "Timeout"
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Degraded State",
+        "detection": "Fallback mechanisms activated",
+        "severity": "medium",
+        "action": "Pass test but log warning, monitor closely",
+        "patterns": [
+          "falling back to",
+          "using fallback",
+          "degraded mode",
+          "retry attempt"
+        ]
+      },
+      {
+        "level": 4,
+        "name": "Performance Issues",
+        "detection": "Response time exceeds thresholds",
+        "severity": "medium",
+        "action": "Log warning, track trend"
+      },
+      {
+        "level": 5,
+        "name": "Resource Warnings",
+        "detection": "High memory/CPU usage",
+        "severity": "low",
+        "action": "Log for analysis"
+      }
+    ],
+    
+    "log_monitoring": {
+      "enabled": true,
+      "scope": "All tests should monitor logs",
+      "failure_conditions": [
+        {
+          "pattern": "ERROR:",
+          "action": "Fail test immediately",
+          "exceptions": ["Expected error in negative test"]
+        },
+        {
+          "pattern": "HF API failed",
+          "action": "Mark as degraded, log warning",
+          "severity": "medium",
+          "reason": "Using fallback is not a success state"
+        },
+        {
+          "pattern": "falling back to local",
+          "action": "Set degraded_mode flag",
+          "report": "System in degraded mode - API unavailable"
+        },
+        {
+          "pattern": "Connection refused",
+          "action": "Fail test",
+          "reason": "Service unavailable"
+        },
+        {
+          "pattern": "Timeout",
+          "action": "Fail test or mark slow",
+          "reason": "Performance issue"
+        }
+      ]
+    }
+  },
+
+  "test_categories": {
+    "health_checks": {
+      "purpose": "Verify all services are operational",
+      "frequency": "Every test run",
+      "tests": [
+        {
+          "name": "test_backend_health",
+          "checks": ["API responds", "Response < 100ms", "No errors in logs"],
+          "log_monitoring": true
+        },
+        {
+          "name": "test_frontend_reachable",
+          "checks": ["Port 3000 accessible", "Index.html loads"],
+          "log_monitoring": true
+        },
+        {
+          "name": "test_websocket_available",
+          "checks": ["Can establish connection", "Accepts messages"],
+          "log_monitoring": true
+        }
+      ]
+    },
+    
+    "api_integration": {
+      "purpose": "Verify external APIs work correctly",
+      "critical": true,
+      "tests": [
+        {
+          "name": "test_huggingface_api_primary",
+          "description": "Test PRIMARY HuggingFace API (not fallback)",
+          "must_succeed": false,
+          "can_fallback": true,
+          "log_monitoring": true,
+          "assertions": [
+            "API responds OR logs show fallback",
+            "If fallback used, mark as DEGRADED",
+            "If API fails, log the error details",
+            "Track API success rate over time"
+          ],
+          "degraded_conditions": [
+            "HF API returns 400/401/403/429/500",
+            "HF API times out",
+            "Using local model fallback"
+          ]
+        },
+        {
+          "name": "test_semantic_scholar_api",
+          "description": "Test Semantic Scholar API",
+          "must_succeed": true,
+          "can_fallback": false,
+          "log_monitoring": true,
+          "rate_limit_handling": "Expect 429, retry with backoff"
+        }
+      ]
+    },
+    
+    "pipeline_stages": {
+      "purpose": "Test each of 7 pipeline stages independently",
+      "source": "Referenced from parent marko.json stages",
+      "tests": [
+        {
+          "stage": 1,
+          "name": "test_stage_1_fetch",
+          "description": "Fetch papers from Semantic Scholar",
+          "inputs": ["keywords: string", "max_papers: int"],
+          "outputs": ["papers: list[Paper]"],
+          "success_criteria": [
+            "Returns non-empty list",
+            "Each paper has required fields",
+            "No errors in logs",
+            "Response time < 10s"
+          ],
+          "failure_detection": [
+            "Empty list returned",
+            "Missing required fields",
+            "API errors in logs",
+            "Timeout"
+          ]
+        },
+        {
+          "stage": 2,
+          "name": "test_stage_2_relevance_scoring",
+          "description": "Score papers for relevance using AI",
+          "inputs": ["papers: list[Paper]", "query: string"],
+          "outputs": ["papers_with_scores: list[Paper]"],
+          "success_criteria": [
+            "All papers have relevance_score",
+            "Scores between 0 and 1",
+            "PRIMARY API used (not fallback)",
+            "No errors in logs"
+          ],
+          "failure_detection": [
+            "Missing scores",
+            "Scores out of range",
+            "Fallback used (DEGRADED state)",
+            "Errors in logs"
+          ],
+          "degraded_conditions": [
+            "Using local model instead of HF API",
+            "Response time > 30s"
+          ],
+          "log_monitoring": {
+            "enabled": true,
+            "fail_on": ["ERROR:", "Exception:"],
+            "warn_on": ["falling back", "HF API failed"],
+            "track_metrics": ["API call count", "Fallback usage %"]
+          }
+        },
+        {
+          "stage": 3,
+          "name": "test_stage_3_theme_clustering",
+          "description": "Cluster papers by theme",
+          "inputs": ["papers: list[Paper]"],
+          "outputs": ["papers_with_themes: list[Paper]"],
+          "success_criteria": [
+            "All papers assigned to themes",
+            "Reasonable number of themes (2-8)",
+            "Themes have descriptive names"
+          ]
+        },
+        {
+          "stage": 4,
+          "name": "test_stage_4_methodology",
+          "description": "Classify methodology",
+          "inputs": ["papers: list[Paper]"],
+          "outputs": ["papers_with_methodology: list[Paper]"]
+        },
+        {
+          "stage": 5,
+          "name": "test_stage_5_ranking",
+          "description": "Rank papers by multiple factors",
+          "inputs": ["papers: list[Paper]"],
+          "outputs": ["ranked_papers: list[Paper]"]
+        },
+        {
+          "stage": 6,
+          "name": "test_stage_6_synthesis",
+          "description": "Generate synthesis report",
+          "inputs": ["papers: list[Paper]"],
+          "outputs": ["report: Report"]
+        },
+        {
+          "stage": 7,
+          "name": "test_stage_7_pdf",
+          "description": "Generate PDF",
+          "inputs": ["report: Report"],
+          "outputs": ["pdf: bytes"]
+        }
+      ]
+    },
+    
+    "error_scenarios": {
+      "purpose": "Test error handling and recovery",
+      "tests": [
+        {
+          "name": "test_api_failure_handling",
+          "scenario": "Primary API fails, fallback succeeds",
+          "expected": "System continues but reports DEGRADED state",
+          "assertion": "Test should WARN, not PASS silently"
+        },
+        {
+          "name": "test_api_total_failure",
+          "scenario": "Both primary and fallback fail",
+          "expected": "Clear error message, graceful degradation"
+        },
+        {
+          "name": "test_network_timeout",
+          "scenario": "Network request times out",
+          "expected": "Timeout detected and reported"
+        },
+        {
+          "name": "test_invalid_input",
+          "scenario": "User provides invalid input",
+          "expected": "Validation error, helpful message"
+        }
+      ]
+    },
+    
+    "performance_tests": {
+      "purpose": "Ensure system meets performance requirements",
+      "tests": [
+        {
+          "name": "test_health_endpoint_latency",
+          "threshold": "< 100ms",
+          "percentile": "p95"
+        },
+        {
+          "name": "test_pipeline_e2e_duration",
+          "threshold": "< 60s for 10 papers",
+          "percentile": "p95"
+        },
+        {
+          "name": "test_websocket_message_latency",
+          "threshold": "< 50ms",
+          "percentile": "p99"
+        }
+      ]
+    }
+  },
+
+  "test_implementation_patterns": {
+    "log_monitoring_fixture": {
+      "description": "Pytest fixture to capture and analyze logs during tests",
+      "file": "backend/tests/conftest.py",
+      "code_pattern": "LogMonitor class that captures logs and checks for errors",
+      "usage": "All tests use @pytest.fixture(autouse=True) to enable automatically"
+    },
+    
+    "degraded_state_detection": {
+      "description": "Tests should detect when system is in degraded mode",
+      "pattern": "Check logs for fallback patterns, set degraded flag",
+      "reporting": "Test passes but logs WARNING with details"
+    },
+    
+    "test_naming_convention": {
+      "unit_tests": "test_<component>_<aspect>",
+      "integration_tests": "test_integration_<components>",
+      "e2e_tests": "test_e2e_<scenario>",
+      "error_tests": "test_error_<scenario>",
+      "performance_tests": "test_perf_<metric>"
+    }
+  },
+
+  "autonomous_debugging_workflow": {
+    "description": "Step-by-step process for autonomous agent to debug and fix issues",
+    "steps": [
+      {
+        "step": 1,
+        "name": "Run Tests",
+        "command": "pytest tests/ -v --tb=short",
+        "output_analysis": "Parse test results, identify failures and warnings"
+      },
+      {
+        "step": 2,
+        "name": "Analyze Logs",
+        "actions": [
+          "Read logs/backend.log",
+          "Read logs/frontend.log",
+          "Extract all ERROR, Exception, failed patterns",
+          "Correlate with test timestamps"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "Identify Root Cause",
+        "decision_tree": {
+          "api_failure": {
+            "pattern": "HF API failed|Bad Request|400|401|403|429|500",
+            "diagnosis": "External API issue",
+            "checks": [
+              "Is API key configured?",
+              "Is API key valid?",
+              "Is service up? (check status page)",
+              "Is rate limit hit?"
+            ]
+          },
+          "timeout": {
+            "pattern": "Timeout|timed out",
+            "diagnosis": "Performance or connectivity issue",
+            "checks": [
+              "Is network reachable?",
+              "Is service overloaded?",
+              "Are timeouts configured correctly?"
+            ]
+          },
+          "import_error": {
+            "pattern": "ModuleNotFoundError|ImportError",
+            "diagnosis": "Dependency issue",
+            "checks": [
+              "Are dependencies installed?",
+              "Is virtual environment activated?",
+              "Is PYTHONPATH correct?"
+            ]
+          },
+          "configuration_error": {
+            "pattern": "Config|settings|environment variable",
+            "diagnosis": "Configuration issue",
+            "checks": [
+              "Is .env file present?",
+              "Are all required variables set?",
+              "Are values valid?"
+            ]
+          }
+        }
+      },
+      {
+        "step": 4,
+        "name": "Attempt Automated Fix",
+        "strategies": [
+          {
+            "issue": "Missing API key",
+            "fix": "Prompt user for API key or use fallback mode",
+            "validation": "Re-run test to verify fix"
+          },
+          {
+            "issue": "Invalid configuration",
+            "fix": "Update config with correct values",
+            "validation": "Re-run config tests"
+          },
+          {
+            "issue": "Missing dependency",
+            "fix": "pip install <dependency>",
+            "validation": "Try import again"
+          },
+          {
+            "issue": "Performance degradation",
+            "fix": "Increase timeout, optimize query",
+            "validation": "Re-run performance test"
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "name": "Update Tests",
+        "actions": [
+          "If new error pattern found, add test for it",
+          "If fix required code change, add regression test",
+          "Update test expectations if behavior changed legitimately"
+        ]
+      },
+      {
+        "step": 6,
+        "name": "Document Issue",
+        "outputs": [
+          "Add to KNOWN_ISSUES.md",
+          "Update TROUBLESHOOTING section in docs",
+          "Commit with descriptive message"
+        ]
+      }
+    ]
+  },
+
+  "monitoring_integration": {
+    "dashboard_integration": {
+      "file": "dashboard.py",
+      "enhancements_needed": [
+        {
+          "feature": "Test Results Panel",
+          "description": "Show latest test run results",
+          "display": ["Pass/Fail count", "Duration", "Last run time"]
+        },
+        {
+          "feature": "Degraded State Indicator",
+          "description": "Show if system is in degraded mode",
+          "triggers": ["Fallback active", "API failures", "High error rate"]
+        },
+        {
+          "feature": "Error Pattern Detection",
+          "description": "Highlight recurring error patterns",
+          "action": "Alert when same error appears 3+ times"
+        }
+      ]
+    },
+    
+    "continuous_monitoring": {
+      "description": "Tests that run continuously in production",
+      "synthetic_tests": [
+        {
+          "name": "heartbeat_test",
+          "frequency": "every 60s",
+          "test": "GET /health",
+          "alert_on_failure": true
+        },
+        {
+          "name": "api_connectivity_test",
+          "frequency": "every 300s",
+          "test": "Call HuggingFace API with simple query",
+          "track_success_rate": true,
+          "alert_threshold": "< 80% success rate"
+        }
+      ]
+    }
+  },
+
+  "test_data_management": {
+    "fixtures": {
+      "sample_papers": {
+        "file": "backend/tests/fixtures/papers.json",
+        "description": "Representative set of academic papers",
+        "count": 10,
+        "diversity": "Different fields, years, citation counts"
+      },
+      "sample_queries": {
+        "file": "backend/tests/fixtures/queries.json",
+        "examples": [
+          "machine learning",
+          "quantum computing",
+          "climate change models"
+        ]
+      }
+    },
+    
+    "mock_responses": {
+      "semantic_scholar": {
+        "file": "backend/tests/mocks/semantic_scholar.json",
+        "scenarios": ["success", "empty_results", "rate_limited", "error"]
+      },
+      "huggingface": {
+        "file": "backend/tests/mocks/huggingface.json",
+        "scenarios": ["success", "model_loading", "rate_limited", "error"]
+      }
+    }
+  },
+
+  "ci_cd_integration": {
+    "github_actions": {
+      "file": ".github/workflows/test.yml",
+      "triggers": ["push", "pull_request"],
+      "jobs": [
+        {
+          "name": "unit-tests",
+          "command": "pytest tests/ -m 'not e2e' -v",
+          "fail_on": "Any test failure"
+        },
+        {
+          "name": "e2e-tests",
+          "command": "pytest tests/ -m 'e2e' -v",
+          "fail_on": "Any test failure",
+          "allow_degraded": true,
+          "log_warnings": true
+        },
+        {
+          "name": "log-analysis",
+          "command": "python scripts/analyze_logs.py",
+          "fail_on": "Critical errors found"
+        }
+      ]
+    }
+  },
+
+  "metrics_and_reporting": {
+    "test_metrics": {
+      "track": [
+        "Test count (total, unit, integration, e2e)",
+        "Pass rate (%)",
+        "Duration (p50, p95, p99)",
+        "Flakiness rate (% of flaky tests)",
+        "Coverage (%)",
+        "Degraded state frequency"
+      ],
+      "reporting": {
+        "frequency": "After each test run",
+        "format": "JSON + Markdown summary",
+        "storage": "tests/results/"
+      }
+    },
+    
+    "error_metrics": {
+      "track": [
+        "Error frequency by type",
+        "API failure rate",
+        "Fallback usage rate",
+        "Mean time to detection (MTTD)",
+        "Mean time to resolution (MTTR)"
+      ]
+    }
+  },
+
+  "autonomous_agent_interface": {
+    "description": "How autonomous agents should interact with this system",
+    "commands": {
+      "run_tests": {
+        "command": "./run_tests.sh",
+        "output_parsing": "Parse pytest JSON output + logs",
+        "decision_points": [
+          "If all pass → Proceed",
+          "If degraded warnings → Investigate logs",
+          "If failures → Run debugging workflow"
+        ]
+      },
+      "analyze_logs": {
+        "command": "python scripts/analyze_logs.py",
+        "output": "JSON with error patterns, frequencies, severity",
+        "action": "Use to guide debugging"
+      },
+      "check_health": {
+        "command": "curl http://localhost:8000/health",
+        "validation": "Status 200 + no errors in logs"
+      }
+    },
+    
+    "decision_matrix": {
+      "all_tests_pass_no_warnings": "✅ Safe to deploy",
+      "all_tests_pass_with_warnings": "⚠️ Review warnings, consider fix",
+      "some_tests_fail": "❌ Must fix before deploy",
+      "degraded_state_detected": "⚠️ System works but suboptimal, investigate",
+      "critical_errors_in_logs": "❌ Immediate action required"
+    }
+  },
+
+  "known_issues_and_patterns": {
+    "huggingface_400_error": {
+      "pattern": "HF API failed, falling back to local: Client error '400 Bad Request'",
+      "root_cause": "Invalid API key or model not accessible via API",
+      "impact": "System uses local model (slower, more memory)",
+      "detection": "Look for 'falling back to local' in logs",
+      "fix_priority": "Medium - system works but degraded",
+      "automated_fix": "Check API key validity, update if needed",
+      "test_should": "Detect and report as degraded state, not pass silently"
+    },
+    
+    "semantic_scholar_rate_limit": {
+      "pattern": "429 Too Many Requests",
+      "root_cause": "Rate limit exceeded",
+      "impact": "Cannot fetch new papers temporarily",
+      "detection": "HTTP 429 status code",
+      "fix_priority": "Low - transient issue",
+      "automated_fix": "Implement exponential backoff, cache results",
+      "test_should": "Expect 429, verify retry logic works"
+    }
+  },
+
+  "future_enhancements": {
+    "planned": [
+      {
+        "feature": "Automated log analysis AI",
+        "description": "Use LLM to analyze logs and suggest fixes",
+        "priority": "High"
+      },
+      {
+        "feature": "Performance regression detection",
+        "description": "Alert when response times increase",
+        "priority": "Medium"
+      },
+      {
+        "feature": "Chaos engineering tests",
+        "description": "Randomly inject failures to test resilience",
+        "priority": "Low"
+      },
+      {
+        "feature": "Visual regression testing",
+        "description": "Screenshot comparison for UI",
+        "priority": "Medium"
+      }
+    ]
+  },
+
+  "references": {
+    "parent_marko": "../marko.json",
+    "test_files": "backend/tests/",
+    "documentation": [
+      "TESTS.md",
+      "DASHBOARD.md",
+      "TROUBLESHOOTING.md (to be created)"
+    ]
+  },
+
+  "version_history": {
+    "5.1.0": {
+      "date": "2024-11-02",
+      "changes": [
+        "Initial testing MARKO created",
+        "Added log monitoring strategy",
+        "Added degraded state detection",
+        "Added autonomous debugging workflow"
+      ]
+    }
+  }
+}

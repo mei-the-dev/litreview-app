@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from backend.main import app
 from backend.core.config import settings
+from tests.log_monitor import log_monitor, log_file_monitor  # Import log monitoring
 
 
 @pytest.fixture
@@ -67,3 +68,7 @@ def sample_query():
         "keywords": "machine learning neural networks",
         "max_papers": 10
     }
+
+
+# Export fixtures
+__all__ = ['client', 'mock_semantic_scholar_response', 'sample_papers', 'sample_query', 'log_monitor', 'log_file_monitor']
