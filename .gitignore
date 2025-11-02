@@ -49,3 +49,4 @@ htmlcov/
 # AI Models (cached locally)
 .cache/
 models/
+backend/.env
