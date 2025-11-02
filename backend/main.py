@@ -32,6 +32,10 @@ app.add_middleware(
 # Include routers
 app.include_router(pipeline_router.router)
 
+# Import and include monitoring router
+from backend.api.routers import monitoring_router
+app.include_router(monitoring_router.router)
+
 # Create output directory
 output_dir = Path("./output")
 output_dir.mkdir(exist_ok=True)
