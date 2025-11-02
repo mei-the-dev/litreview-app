@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
+import { StageDataPreview } from './previews/StageDataPreview';
 
 interface StageBentoCardProps {
   stage: PipelineStage;
@@ -192,60 +193,8 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           </div>
         )}
         
-        {/* Result preview */}
-        {stage.status === 'completed' && stage.result && (
-          <div className="mt-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-            <div className="text-xs text-green-400 font-medium mb-1">
-              {stage.id === 1 && stage.result.papers_count && `✓ ${stage.result.papers_count} papers fetched`}
-              {stage.id === 2 && stage.result.scored && `✓ ${stage.result.scored} papers scored`}
-              {stage.id === 3 && stage.result.themes_found && (
-                <div>
-                  <div>✓ {stage.result.themes_found} themes identified</div>
-                  {stage.result.themes && (
-                    <div className="mt-1 text-[10px] opacity-75">
-                      {Object.entries(stage.result.themes).slice(0, 3).map(([theme, count]) => (
-                        <div key={theme}>• {theme} ({count})</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              {stage.id === 4 && stage.result.methodologies_found && (
-                <div>
-                  <div>✓ {stage.result.methodologies_found} methodologies</div>
-                  {stage.result.methodologies && (
-                    <div className="mt-1 text-[10px] opacity-75">
-                      {Object.entries(stage.result.methodologies).slice(0, 3).map(([method, count]) => (
-                        <div key={method}>• {method} ({count})</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              {stage.id === 5 && stage.result.papers_ranked && `✓ ${stage.result.papers_ranked} papers ranked`}
-              {stage.id === 6 && stage.result.report_generated && (
-                <div>
-                  <div>✓ Synthesis report generated</div>
-                  {stage.result.sections && (
-                    <div className="mt-1 text-[10px] opacity-75">
-                      {stage.result.sections} sections, {stage.result.total_length} chars
-                    </div>
-                  )}
-                </div>
-              )}
-              {stage.id === 7 && stage.result.pdf_generated && (
-                <div>
-                  <div>✓ PDF generated successfully</div>
-                  {stage.result.file_size_kb && (
-                    <div className="mt-1 text-[10px] opacity-75">
-                      Size: {(stage.result.file_size_kb / 1024).toFixed(2)} MB
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Enhanced Result preview with StageDataPreview component */}
+        <StageDataPreview stage={stage} isDark={isDark} />
       </div>
       
       {/* Decorative corner accent */}
