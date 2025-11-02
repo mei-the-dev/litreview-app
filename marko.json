@@ -1,0 +1,639 @@
+{
+  "marko_version": "5.0.0",
+  "title": "LitReview - Automated Academic Literature Review System",
+  "description": "AI-powered system for automated academic literature review using Semantic Scholar API, HuggingFace models, and beautiful glassmorphism UI with real-time WebSocket updates",
+  
+  "tech_stack_manifest": {
+    "technology_choices": [
+      {
+        "category": "frontend_framework",
+        "chosen": "React",
+        "version": "18.2.0",
+        "locked": true,
+        "reason": "Modern, fast, excellent TypeScript support, perfect for real-time UI updates",
+        "official_docs": "https://react.dev/",
+        "dependencies": {
+          "react": "18.2.0",
+          "react-dom": "18.2.0",
+          "@types/react": "18.2.45",
+          "@types/react-dom": "18.2.18"
+        }
+      },
+      {
+        "category": "build_tool",
+        "chosen": "Vite",
+        "version": "5.0.11",
+        "locked": true,
+        "reason": "Lightning fast HMR, excellent TypeScript support",
+        "dependencies": {
+          "vite": "5.0.11",
+          "@vitejs/plugin-react": "4.2.1"
+        }
+      },
+      {
+        "category": "language",
+        "chosen": "TypeScript",
+        "version": "5.3.3",
+        "locked": true,
+        "reason": "Type safety, better IDE support, prevents runtime errors",
+        "dependencies": {
+          "typescript": "5.3.3"
+        }
+      },
+      {
+        "category": "state_management",
+        "chosen": "Zustand",
+        "version": "4.4.7",
+        "locked": true,
+        "reason": "Lightweight, simple API, perfect for real-time updates",
+        "dependencies": {
+          "zustand": "4.4.7"
+        }
+      },
+      {
+        "category": "styling",
+        "chosen": "TailwindCSS",
+        "version": "3.4.1",
+        "locked": true,
+        "reason": "Utility-first, perfect for glassmorphism design, rapid development",
+        "dependencies": {
+          "tailwindcss": "3.4.1",
+          "autoprefixer": "10.4.16",
+          "postcss": "8.4.33"
+        }
+      },
+      {
+        "category": "animation",
+        "chosen": "Framer Motion",
+        "version": "10.18.0",
+        "locked": false,
+        "reason": "Smooth animations for bento cards and transitions",
+        "dependencies": {
+          "framer-motion": "10.18.0"
+        }
+      },
+      {
+        "category": "icons",
+        "chosen": "Lucide React",
+        "version": "0.303.0",
+        "locked": false,
+        "dependencies": {
+          "lucide-react": "0.303.0"
+        }
+      },
+      {
+        "category": "http_client",
+        "chosen": "Axios",
+        "version": "1.6.5",
+        "locked": true,
+        "reason": "Robust HTTP client with interceptors",
+        "dependencies": {
+          "axios": "1.6.5"
+        }
+      },
+      {
+        "category": "backend_framework",
+        "chosen": "FastAPI",
+        "version": "0.109.0",
+        "locked": true,
+        "reason": "High performance, async, automatic OpenAPI docs, WebSocket support",
+        "official_docs": "https://fastapi.tiangolo.com/",
+        "dependencies": {
+          "fastapi": "0.109.0",
+          "uvicorn[standard]": "0.27.0",
+          "python-multipart": "0.0.6"
+        }
+      },
+      {
+        "category": "ai_framework",
+        "chosen": "HuggingFace Transformers",
+        "version": "4.36.2",
+        "locked": false,
+        "reason": "Industry standard for NLP tasks, local model support",
+        "dependencies": {
+          "transformers": "4.36.2",
+          "torch": "2.1.2",
+          "sentence-transformers": "2.2.2"
+        }
+      },
+      {
+        "category": "http_async",
+        "chosen": "httpx",
+        "version": "0.26.0",
+        "locked": false,
+        "reason": "Async HTTP client for external APIs",
+        "dependencies": {
+          "httpx": "0.26.0"
+        }
+      },
+      {
+        "category": "pdf_generation",
+        "chosen": "WeasyPrint",
+        "version": "60.2",
+        "locked": false,
+        "reason": "HTML/CSS to PDF conversion, beautiful academic formatting",
+        "dependencies": {
+          "weasyprint": "60.2",
+          "markdown": "3.5.1"
+        }
+      },
+      {
+        "category": "validation",
+        "chosen": "Pydantic",
+        "version": "2.5.3",
+        "locked": true,
+        "reason": "Data validation, settings management, FastAPI integration",
+        "dependencies": {
+          "pydantic": "2.5.3",
+          "pydantic-settings": "2.1.0"
+        }
+      },
+      {
+        "category": "websocket",
+        "chosen": "FastAPI WebSockets",
+        "version": "0.109.0",
+        "locked": true,
+        "reason": "Built-in WebSocket support for real-time updates",
+        "dependencies": {
+          "websockets": "12.0"
+        }
+      }
+    ]
+  },
+  
+  "architectural_schema": {
+    "project_structure": {
+      "directories": [
+        {
+          "path": "frontend/",
+          "purpose": "React TypeScript frontend application",
+          "conventions": ["TypeScript only", "Functional components", "Hooks"]
+        },
+        {
+          "path": "frontend/src/",
+          "purpose": "Source code root"
+        },
+        {
+          "path": "frontend/src/components/",
+          "purpose": "Reusable React components",
+          "conventions": ["PascalCase.tsx", "Export named components", "Co-locate types"],
+          "anti_patterns": ["No default exports", "No business logic"]
+        },
+        {
+          "path": "frontend/src/components/bento/",
+          "purpose": "Bento grid UI components for pipeline stages",
+          "conventions": ["Glassmorphism design", "Real-time updates", "Animated transitions"]
+        },
+        {
+          "path": "frontend/src/stores/",
+          "purpose": "Zustand state management stores",
+          "conventions": ["*Store.ts naming", "Single responsibility", "Typed selectors"],
+          "examples": ["pipelineStore.ts", "uiStore.ts"]
+        },
+        {
+          "path": "frontend/src/services/",
+          "purpose": "API client services and WebSocket handlers",
+          "conventions": ["*Service.ts naming", "Axios instances", "Error handling"]
+        },
+        {
+          "path": "frontend/src/types/",
+          "purpose": "TypeScript type definitions",
+          "conventions": ["*.types.ts naming", "Export interfaces"]
+        },
+        {
+          "path": "frontend/src/hooks/",
+          "purpose": "Custom React hooks",
+          "conventions": ["use*.ts naming", "Reusable logic"]
+        },
+        {
+          "path": "backend/",
+          "purpose": "FastAPI Python backend"
+        },
+        {
+          "path": "backend/api/",
+          "purpose": "API layer - routers and models"
+        },
+        {
+          "path": "backend/api/routers/",
+          "purpose": "FastAPI route handlers",
+          "conventions": ["*_router.py naming", "Dependency injection", "Async/await"],
+          "examples": ["pipeline_router.py", "papers_router.py"]
+        },
+        {
+          "path": "backend/api/models/",
+          "purpose": "Pydantic request/response models",
+          "conventions": ["*_model.py naming", "Validation rules", "Serialization"],
+          "examples": ["paper_model.py", "report_model.py"]
+        },
+        {
+          "path": "backend/domain/",
+          "purpose": "Business logic and pipeline stages"
+        },
+        {
+          "path": "backend/domain/pipeline/",
+          "purpose": "Literature review pipeline stages",
+          "conventions": ["Each stage is separate module", "Async processing", "Progress callbacks"],
+          "stages": [
+            "stage_1_fetch.py - Semantic Scholar API",
+            "stage_2_relevance.py - AI relevance scoring",
+            "stage_3_themes.py - Theme clustering",
+            "stage_4_methodology.py - Methodology grouping",
+            "stage_5_ranking.py - Final ranking",
+            "stage_6_synthesis.py - Report generation",
+            "stage_7_pdf.py - PDF generation"
+          ]
+        },
+        {
+          "path": "backend/infrastructure/",
+          "purpose": "External services and utilities"
+        },
+        {
+          "path": "backend/infrastructure/ai/",
+          "purpose": "AI model interfaces (HuggingFace + local fallback)",
+          "conventions": ["Abstract interface", "Fallback mechanism", "Caching"]
+        },
+        {
+          "path": "backend/infrastructure/external/",
+          "purpose": "External API clients",
+          "examples": ["semantic_scholar.py", "huggingface_api.py"]
+        },
+        {
+          "path": "backend/core/",
+          "purpose": "Core utilities and configuration",
+          "examples": ["config.py", "websocket_manager.py"]
+        }
+      ]
+    },
+    
+    "naming_conventions": {
+      "frontend": {
+        "components": "PascalCase.tsx (e.g., BentoCard.tsx)",
+        "hooks": "use*.ts (e.g., useWebSocket.ts)",
+        "stores": "*Store.ts (e.g., pipelineStore.ts)",
+        "services": "*Service.ts (e.g., apiService.ts)",
+        "types": "*.types.ts (e.g., pipeline.types.ts)"
+      },
+      "backend": {
+        "routers": "*_router.py (e.g., pipeline_router.py)",
+        "models": "*_model.py (e.g., paper_model.py)",
+        "services": "*_service.py (e.g., ai_service.py)",
+        "stages": "stage_*_*.py (e.g., stage_1_fetch.py)"
+      }
+    },
+    
+    "design_patterns": {
+      "frontend": [
+        "Compound Component Pattern for BentoGrid",
+        "Custom Hooks for WebSocket and API",
+        "Zustand for global state",
+        "Context API for theme"
+      ],
+      "backend": [
+        "Pipeline Pattern for literature review stages",
+        "Strategy Pattern for AI model selection (HF API vs local)",
+        "Observer Pattern for WebSocket progress updates",
+        "Factory Pattern for PDF generation"
+      ]
+    }
+  },
+  
+  "data_flow_schema": {
+    "literature_review_pipeline": {
+      "description": "End-to-end data flow from query to PDF report",
+      "flow": [
+        {
+          "stage": "1_user_input",
+          "layer": "ui",
+          "location": "frontend/src/components/QueryInput.tsx",
+          "data": "{ keywords: string[], filters: object }",
+          "next": "POST /api/pipeline/start"
+        },
+        {
+          "stage": "2_api_gateway",
+          "layer": "api",
+          "location": "backend/api/routers/pipeline_router.py",
+          "endpoint": "POST /api/pipeline/start",
+          "validates": "PipelineRequest model",
+          "next": "Pipeline orchestrator"
+        },
+        {
+          "stage": "3_fetch_papers",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_1_fetch.py",
+          "external_api": "Semantic Scholar API",
+          "output": "List[Paper]",
+          "websocket_event": "papers_fetched",
+          "next": "Stage 2"
+        },
+        {
+          "stage": "4_relevance_scoring",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_2_relevance.py",
+          "ai_model": "HuggingFace API or local BERT",
+          "output": "List[Paper with relevance_score]",
+          "websocket_event": "relevance_scored",
+          "next": "Stage 3"
+        },
+        {
+          "stage": "5_theme_clustering",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_3_themes.py",
+          "ai_model": "Sentence embeddings + clustering",
+          "output": "Dict[theme -> List[Paper]]",
+          "websocket_event": "themes_grouped",
+          "next": "Stage 4"
+        },
+        {
+          "stage": "6_methodology_grouping",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_4_methodology.py",
+          "ai_model": "Classification model",
+          "output": "Dict[methodology -> List[Paper]]",
+          "websocket_event": "methodologies_grouped",
+          "next": "Stage 5"
+        },
+        {
+          "stage": "7_final_ranking",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_5_ranking.py",
+          "algorithm": "Multi-factor scoring",
+          "output": "List[Paper] sorted by score",
+          "websocket_event": "papers_ranked",
+          "next": "Stage 6"
+        },
+        {
+          "stage": "8_synthesis_report",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_6_synthesis.py",
+          "ai_model": "Text generation (summarization)",
+          "output": "StructuredReport (markdown)",
+          "websocket_event": "report_generated",
+          "next": "Stage 7"
+        },
+        {
+          "stage": "9_pdf_generation",
+          "layer": "domain",
+          "location": "backend/domain/pipeline/stage_7_pdf.py",
+          "tool": "WeasyPrint",
+          "output": "PDF file path",
+          "websocket_event": "pdf_generated",
+          "next": "Return to client"
+        },
+        {
+          "stage": "10_realtime_updates",
+          "layer": "websocket",
+          "location": "frontend/src/hooks/useWebSocket.ts",
+          "events": "All stage completion events",
+          "updates": "pipelineStore state",
+          "renders": "BentoGrid components"
+        }
+      ]
+    },
+    
+    "websocket_protocol": {
+      "connection": "ws://localhost:8000/ws/{session_id}",
+      "message_format": {
+        "type": "stage_update | stage_complete | error",
+        "stage": "1-7",
+        "progress": "0-100",
+        "data": "stage-specific payload",
+        "timestamp": "ISO 8601"
+      }
+    }
+  },
+  
+  "long_term_plan": {
+    "goals": [
+      {
+        "id": "G001",
+        "title": "Create fully functional academic literature review pipeline",
+        "status": "in_progress",
+        "priority": "critical"
+      },
+      {
+        "id": "G002",
+        "title": "Implement beautiful glassmorphism bento UI with real-time updates",
+        "status": "in_progress",
+        "priority": "critical"
+      },
+      {
+        "id": "G003",
+        "title": "Integrate HuggingFace API with local model fallback",
+        "status": "in_progress",
+        "priority": "high"
+      }
+    ],
+    
+    "tasks": [
+      {
+        "id": "T001",
+        "title": "Initialize project structure with MARKO",
+        "status": "completed",
+        "assigned_to": "system",
+        "depends_on": [],
+        "phase": "1_scaffolding"
+      },
+      {
+        "id": "T002",
+        "title": "Setup backend FastAPI application",
+        "status": "in_progress",
+        "phase": "2_backend",
+        "subtasks": [
+          "Create main.py with FastAPI app",
+          "Setup WebSocket manager",
+          "Create router structure",
+          "Add CORS middleware"
+        ]
+      },
+      {
+        "id": "T003",
+        "title": "Implement Semantic Scholar API client",
+        "status": "pending",
+        "phase": "2_backend",
+        "depends_on": ["T002"]
+      },
+      {
+        "id": "T004",
+        "title": "Build 7-stage pipeline architecture",
+        "status": "pending",
+        "phase": "2_backend",
+        "depends_on": ["T002"]
+      },
+      {
+        "id": "T005",
+        "title": "Integrate HuggingFace models (API + local)",
+        "status": "pending",
+        "phase": "2_backend",
+        "depends_on": ["T004"]
+      },
+      {
+        "id": "T006",
+        "title": "Implement PDF generation with WeasyPrint",
+        "status": "pending",
+        "phase": "2_backend",
+        "depends_on": ["T004"]
+      },
+      {
+        "id": "T007",
+        "title": "Setup React frontend with Vite",
+        "status": "pending",
+        "phase": "3_frontend"
+      },
+      {
+        "id": "T008",
+        "title": "Create glassmorphism bento grid components",
+        "status": "pending",
+        "phase": "3_frontend",
+        "depends_on": ["T007"]
+      },
+      {
+        "id": "T009",
+        "title": "Implement real-time WebSocket updates",
+        "status": "pending",
+        "phase": "3_frontend",
+        "depends_on": ["T007", "T002"]
+      },
+      {
+        "id": "T010",
+        "title": "Create Zustand stores for pipeline state",
+        "status": "pending",
+        "phase": "3_frontend",
+        "depends_on": ["T007"]
+      },
+      {
+        "id": "T011",
+        "title": "Integration testing - full pipeline",
+        "status": "pending",
+        "phase": "4_testing",
+        "depends_on": ["T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010"]
+      }
+    ]
+  },
+  
+  "decision_log": {
+    "decisions": [
+      {
+        "adr_id": "ADR-001",
+        "title": "Use React for frontend",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "Excellent TypeScript support, large ecosystem, perfect for real-time UI updates with hooks",
+        "locked": true
+      },
+      {
+        "adr_id": "ADR-002",
+        "title": "Use FastAPI for backend",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "Native async support, WebSocket support, automatic OpenAPI docs, high performance",
+        "locked": true
+      },
+      {
+        "adr_id": "ADR-003",
+        "title": "Glassmorphism bento grid design",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "Modern, beautiful, excellent for dashboard-style interfaces, matches reference design",
+        "locked": false
+      },
+      {
+        "adr_id": "ADR-004",
+        "title": "WebSocket for real-time updates",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "Low latency, bidirectional, perfect for pipeline progress updates, better than SSE",
+        "locked": true
+      },
+      {
+        "adr_id": "ADR-005",
+        "title": "HuggingFace API with local fallback",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "HF API for speed, local models for reliability/privacy, best of both worlds",
+        "locked": false
+      },
+      {
+        "adr_id": "ADR-006",
+        "title": "WeasyPrint for PDF generation",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "HTML/CSS to PDF, excellent typography, academic formatting support",
+        "locked": false,
+        "alternatives": ["ReportLab", "pdfkit"],
+        "why_not_alternatives": "WeasyPrint has better CSS support for academic formatting"
+      },
+      {
+        "adr_id": "ADR-007",
+        "title": "7-stage pipeline architecture",
+        "date": "2025-11-02",
+        "status": "accepted",
+        "rationale": "Clear separation of concerns, each stage is testable, easy to add/remove stages",
+        "locked": false
+      }
+    ]
+  },
+  
+  "integration_points": {
+    "external_apis": [
+      {
+        "name": "Semantic Scholar API",
+        "base_url": "https://api.semanticscholar.org/graph/v1",
+        "endpoints": [
+          "/paper/search?query={keywords}",
+          "/paper/{paperId}"
+        ],
+        "rate_limits": "100 requests/5 minutes",
+        "authentication": "Optional API key (higher limits)"
+      },
+      {
+        "name": "HuggingFace Inference API",
+        "base_url": "https://api-inference.huggingface.co/models",
+        "models": [
+          "sentence-transformers/all-MiniLM-L6-v2 (embeddings)",
+          "facebook/bart-large-cnn (summarization)"
+        ],
+        "rate_limits": "Depends on account tier",
+        "authentication": "Required (HF_TOKEN)"
+      }
+    ],
+    
+    "local_models_fallback": [
+      {
+        "task": "embeddings",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "size": "~80MB",
+        "runtime": "CPU ok, GPU faster"
+      },
+      {
+        "task": "summarization",
+        "model": "facebook/bart-large-cnn",
+        "size": "~1.6GB",
+        "runtime": "GPU recommended"
+      }
+    ]
+  },
+  
+  "environment_configuration": {
+    "frontend": {
+      "dev_server": "http://localhost:3000",
+      "api_base_url": "http://localhost:8000",
+      "websocket_url": "ws://localhost:8000/ws"
+    },
+    "backend": {
+      "host": "0.0.0.0",
+      "port": 8000,
+      "reload": true,
+      "log_level": "info",
+      "cors_origins": ["http://localhost:3000"]
+    },
+    "environment_variables": {
+      "required": [
+        "HF_TOKEN - HuggingFace API token (optional for API, required for rate limits)"
+      ],
+      "optional": [
+        "SEMANTIC_SCHOLAR_API_KEY - Higher rate limits",
+        "USE_LOCAL_MODELS - Force local model usage (default: false)"
+      ]
+    }
+  }
+}
