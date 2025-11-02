@@ -1,0 +1,659 @@
+{
+  "marko_version": "5.0.0",
+  "marko_type": "feature_polish",
+  "created": "2025-11-02T23:46:00Z",
+  "title": "Bento Grid UX Polish - Fix Overlapping & State-of-the-Art Design",
+  "description": "Fix bento card overlapping issues and elevate the design to state-of-the-art glassmorphism bento grid interface with enhanced pipeline state visualization and interpretability",
+  
+  "problem_statement": {
+    "primary_issues": [
+      {
+        "id": 1,
+        "severity": "critical",
+        "title": "Bento cards are overlapping",
+        "description": "Grid layout breaks causing cards to overlap each other, destroying readability and UX",
+        "root_causes": [
+          "CSS Grid template areas not properly defined",
+          "Card sizing not responsive to content",
+          "Z-index conflicts between cards",
+          "Missing grid gap properties",
+          "Improper use of absolute positioning"
+        ],
+        "evidence": "Visual inspection shows cards rendering on top of each other"
+      },
+      {
+        "id": 2,
+        "severity": "high",
+        "title": "Card design lacks visual hierarchy",
+        "description": "All cards look the same, no clear distinction between stages, statuses, or importance",
+        "impact": "Users can't quickly understand pipeline state at a glance"
+      },
+      {
+        "id": 3,
+        "severity": "high",
+        "title": "Glassmorphism effect not properly implemented",
+        "description": "Cards need proper backdrop blur, transparency, and layering for authentic glassmorphism",
+        "desired_state": "Beautiful, modern glassmorphism with depth, blur, and subtle animations"
+      },
+      {
+        "id": 4,
+        "severity": "medium",
+        "title": "Pipeline state not well communicated",
+        "description": "Cards don't effectively show the data state at each pipeline step for interpretability",
+        "improvement": "Each card should visually and textually communicate what data exists at that stage"
+      },
+      {
+        "id": 5,
+        "severity": "medium",
+        "title": "Loading/progress states not engaging",
+        "description": "Generic spinners and progress bars, lacking personality and engagement",
+        "improvement": "Use animated illustrations, skeleton screens, and micro-interactions"
+      }
+    ]
+  },
+  
+  "design_vision": {
+    "aesthetic": "State-of-the-art glassmorphism bento grid",
+    "principles": [
+      "Visual Hierarchy - Important info stands out",
+      "Progressive Disclosure - Show overview, reveal details on interaction",
+      "Motion Design - Smooth, purposeful animations",
+      "Data Interpretation - Each stage's data state is clear",
+      "Responsive Beauty - Looks stunning on all screen sizes",
+      "Accessibility - WCAG AA compliant colors and interactions"
+    ],
+    "reference_standards": [
+      "Apple's HIG for glassmorphism",
+      "Material Design 3 for motion",
+      "Tailwind UI for component quality",
+      "Vercel's design system for sophistication"
+    ]
+  },
+  
+  "solution_architecture": {
+    "layout_fixes": {
+      "approach": "CSS Grid with explicit template areas",
+      "implementation": [
+        "Define responsive grid template for 1-7 cards",
+        "Use grid-template-columns and grid-template-rows",
+        "Assign each card to specific grid-area",
+        "Add proper gap (1rem-2rem)",
+        "Remove conflicting absolute positioning",
+        "Add container queries for responsive breakpoints"
+      ],
+      "grid_patterns": {
+        "mobile": "1 column stack",
+        "tablet": "2 column grid",
+        "desktop": "3-4 column bento with varying sizes",
+        "large": "Asymmetric bento grid with feature cards 2x size"
+      }
+    },
+    
+    "glassmorphism_system": {
+      "layers": [
+        {
+          "layer": "background",
+          "style": "gradient mesh (blue → purple → pink)",
+          "animation": "subtle rotation and scale"
+        },
+        {
+          "layer": "glass_cards",
+          "style": "backdrop-filter: blur(12px), rgba(255,255,255,0.1)",
+          "border": "1px solid rgba(255,255,255,0.2)",
+          "shadow": "0 8px 32px rgba(0,0,0,0.1)"
+        },
+        {
+          "layer": "content",
+          "style": "clear, high contrast text with proper spacing",
+          "hierarchy": "title (xl), subtitle (base), data (sm)"
+        }
+      ],
+      "state_variations": {
+        "pending": "gray tint, pulsing opacity",
+        "running": "blue glow, animated border",
+        "complete": "green accent, checkmark badge",
+        "error": "red overlay, shake animation"
+      }
+    },
+    
+    "card_component_architecture": {
+      "base_structure": {
+        "header": "Icon + Title + Status Badge",
+        "body": "Data preview or loading state",
+        "footer": "Progress bar + Actions",
+        "overlay": "Hover/focus effects"
+      },
+      "data_previews": {
+        "stage_1_fetch": {
+          "metrics": ["Paper count", "Sources", "Date range"],
+          "visual": "Bar chart of papers per year",
+          "icon": "📚 Book stack"
+        },
+        "stage_2_relevance": {
+          "metrics": ["Avg score", "High relevance count", "Low relevance count"],
+          "visual": "Score distribution histogram",
+          "icon": "🎯 Target"
+        },
+        "stage_3_themes": {
+          "metrics": ["Theme count", "Largest theme", "Smallest theme"],
+          "visual": "Word cloud or bubble chart",
+          "icon": "🏷️ Tags"
+        },
+        "stage_4_methodology": {
+          "metrics": ["Methodology types", "Most common", "Distribution"],
+          "visual": "Pie chart",
+          "icon": "🔬 Microscope"
+        },
+        "stage_5_ranking": {
+          "metrics": ["Total papers", "Top score", "Criteria used"],
+          "visual": "Top 5 papers list with scores",
+          "icon": "🏆 Trophy"
+        },
+        "stage_6_synthesis": {
+          "metrics": ["Word count", "Sections", "Key findings"],
+          "visual": "Document preview with highlights",
+          "icon": "📝 Document"
+        },
+        "stage_7_pdf": {
+          "metrics": ["File size", "Page count", "Download ready"],
+          "visual": "PDF thumbnail",
+          "icon": "📄 Page"
+        }
+      }
+    },
+    
+    "animation_system": {
+      "card_entrance": {
+        "stagger": "100ms delay per card",
+        "animation": "fade + slide up + scale",
+        "duration": "600ms",
+        "easing": "spring(1, 80, 10)"
+      },
+      "state_transitions": {
+        "pending_to_running": "pulse + border glow",
+        "running_to_complete": "scale bounce + confetti",
+        "any_to_error": "shake + red pulse"
+      },
+      "hover_effects": {
+        "lift": "translateY(-4px) + larger shadow",
+        "glow": "border brightness increase",
+        "timing": "200ms ease-out"
+      },
+      "loading_states": {
+        "skeleton": "shimmer gradient animation",
+        "spinner": "rotating gradient ring",
+        "progress": "smooth fill with gradient"
+      }
+    }
+  },
+  
+  "implementation_plan": {
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Fix Grid Layout & Overlapping",
+        "priority": "critical",
+        "duration": "30 minutes",
+        "tasks": [
+          {
+            "task_id": "1.1",
+            "title": "Refactor BentoGrid layout",
+            "files": ["frontend/src/components/bento/BentoGrid.tsx"],
+            "implementation": [
+              "Remove any absolute positioning from cards",
+              "Define CSS Grid with explicit template",
+              "Set proper grid-template-columns for responsive design",
+              "Add grid gap: 1.5rem (24px)",
+              "Assign each card to specific grid-area",
+              "Add min-height constraints to prevent collapse",
+              "Test with 1, 3, 5, 7 cards to verify no overlap"
+            ],
+            "validation": "Visual test: all cards visible, no overlap at any screen size"
+          },
+          {
+            "task_id": "1.2",
+            "title": "Fix StageBentoCard sizing",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Ensure card uses grid-area properly",
+              "Remove fixed width/height if present",
+              "Add min-height and max-height constraints",
+              "Use flexbox for internal layout (not absolute)",
+              "Add overflow handling for long content",
+              "Test content overflow scenarios"
+            ],
+            "validation": "Cards maintain proper size with varying content lengths"
+          },
+          {
+            "task_id": "1.3",
+            "title": "Responsive breakpoints",
+            "files": ["frontend/src/components/bento/BentoGrid.tsx"],
+            "implementation": [
+              "Mobile (<768px): Single column stack",
+              "Tablet (768-1024px): 2 column grid",
+              "Desktop (1024-1440px): 3 column grid",
+              "Large (>1440px): 4 column asymmetric bento",
+              "Use Tailwind responsive utilities (sm: md: lg: xl: 2xl:)",
+              "Test on all breakpoints"
+            ],
+            "validation": "Grid adapts smoothly to all screen sizes"
+          }
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Implement Premium Glassmorphism",
+        "priority": "high",
+        "duration": "45 minutes",
+        "tasks": [
+          {
+            "task_id": "2.1",
+            "title": "Create animated gradient background",
+            "files": ["frontend/src/App.tsx", "frontend/src/index.css"],
+            "implementation": [
+              "Add gradient mesh background with 3-4 color stops",
+              "Use CSS animation for subtle movement",
+              "Add blur layers for depth",
+              "Ensure performance with GPU acceleration",
+              "Use CSS custom properties for theming"
+            ],
+            "validation": "Background animates smoothly at 60fps"
+          },
+          {
+            "task_id": "2.2",
+            "title": "Apply glassmorphism to cards",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "backdrop-filter: blur(12px) saturate(180%)",
+              "background: rgba(255, 255, 255, 0.1)",
+              "border: 1px solid rgba(255, 255, 255, 0.2)",
+              "box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15)",
+              "Add inner shadow for depth",
+              "Ensure text contrast meets WCAG AA"
+            ],
+            "validation": "Cards have clear glass effect with readable text"
+          },
+          {
+            "task_id": "2.3",
+            "title": "State-based visual variations",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Pending: grayscale filter + opacity 0.6",
+              "Running: animated blue border gradient",
+              "Complete: green accent glow",
+              "Error: red overlay with pulse",
+              "Add status badge in top-right corner",
+              "Use Framer Motion variants for smooth transitions"
+            ],
+            "validation": "Each state visually distinct and engaging"
+          }
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Enhanced Data Visualization",
+        "priority": "high",
+        "duration": "60 minutes",
+        "tasks": [
+          {
+            "task_id": "3.1",
+            "title": "Create stage-specific preview components",
+            "files": [
+              "frontend/src/components/bento/previews/FetchPreview.tsx",
+              "frontend/src/components/bento/previews/RelevancePreview.tsx",
+              "frontend/src/components/bento/previews/ThemesPreview.tsx",
+              "frontend/src/components/bento/previews/MethodologyPreview.tsx",
+              "frontend/src/components/bento/previews/RankingPreview.tsx",
+              "frontend/src/components/bento/previews/SynthesisPreview.tsx",
+              "frontend/src/components/bento/previews/PdfPreview.tsx"
+            ],
+            "implementation": [
+              "Each preview shows 2-3 key metrics",
+              "Add mini visualization (chart, graph, list)",
+              "Use skeleton screens for loading",
+              "Add expand button for detail view",
+              "Keep previews lightweight (<500ms render)"
+            ],
+            "validation": "All previews render correctly with real and loading states"
+          },
+          {
+            "task_id": "3.2",
+            "title": "Integrate previews into StageBentoCard",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Render appropriate preview based on stage",
+              "Pass stage data to preview component",
+              "Handle loading/empty/error states",
+              "Add fade transition when data loads",
+              "Ensure preview fits card bounds"
+            ],
+            "validation": "Correct preview shown for each stage with smooth loading"
+          },
+          {
+            "task_id": "3.3",
+            "title": "Add micro-visualizations library",
+            "files": ["frontend/src/components/bento/visualizations/*"],
+            "implementation": [
+              "MiniBarChart - for paper counts, distributions",
+              "MiniLineChart - for trends over time",
+              "MiniPieChart - for methodology distribution",
+              "MiniWordCloud - for themes (lightweight version)",
+              "StatCard - for single metric with icon",
+              "All optimized for small size (100-200px)"
+            ],
+            "validation": "Visualizations render quickly and look good in cards"
+          }
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Animation & Motion Design",
+        "priority": "high",
+        "duration": "45 minutes",
+        "tasks": [
+          {
+            "task_id": "4.1",
+            "title": "Implement card entrance animations",
+            "files": ["frontend/src/components/bento/BentoGrid.tsx"],
+            "implementation": [
+              "Use Framer Motion for animation",
+              "Stagger card entrance by 100ms",
+              "Animate from opacity 0 + translateY(20px)",
+              "Add spring physics for natural feel",
+              "Only animate on first render, not on updates"
+            ],
+            "validation": "Cards animate in smoothly when pipeline starts"
+          },
+          {
+            "task_id": "4.2",
+            "title": "State transition animations",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Pending → Running: scale pulse + border animation",
+              "Running → Complete: bounce + particle burst effect",
+              "Any → Error: shake + red flash",
+              "Use AnimatePresence for smooth unmounting",
+              "Add reduced motion support"
+            ],
+            "validation": "All state transitions feel smooth and intentional"
+          },
+          {
+            "task_id": "4.3",
+            "title": "Hover and interaction effects",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "implementation": [
+              "Hover: lift card (translateY(-4px)) + increase shadow",
+              "Focus: add ring outline for accessibility",
+              "Click: subtle scale down feedback",
+              "Add cursor pointer for interactive cards",
+              "Disable effects for running/pending cards"
+            ],
+            "validation": "Interactions feel responsive and polished"
+          },
+          {
+            "task_id": "4.4",
+            "title": "Loading state animations",
+            "files": ["frontend/src/components/bento/LoadingStates.tsx"],
+            "implementation": [
+              "Skeleton screen with shimmer effect",
+              "Rotating gradient spinner",
+              "Smooth progress bar with gradient fill",
+              "Pulsing placeholder elements",
+              "All use GPU-accelerated properties"
+            ],
+            "validation": "Loading states are engaging and performant"
+          }
+        ]
+      },
+      {
+        "phase": 5,
+        "name": "Typography & Visual Hierarchy",
+        "priority": "medium",
+        "duration": "30 minutes",
+        "tasks": [
+          {
+            "task_id": "5.1",
+            "title": "Define typography scale",
+            "files": ["frontend/tailwind.config.js", "frontend/src/index.css"],
+            "implementation": [
+              "Card title: text-xl font-bold",
+              "Card subtitle: text-sm font-medium text-gray-300",
+              "Metrics: text-2xl font-bold with colored accents",
+              "Labels: text-xs uppercase tracking-wide",
+              "Body: text-sm leading-relaxed",
+              "Ensure all text has proper contrast on glass"
+            ],
+            "validation": "Text hierarchy is clear and readable"
+          },
+          {
+            "task_id": "5.2",
+            "title": "Icon system",
+            "files": ["frontend/src/components/bento/StageIcon.tsx"],
+            "implementation": [
+              "Create StageIcon component with emoji or Lucide icons",
+              "Each stage has distinctive icon",
+              "Icons scale with card size",
+              "Add color coding for stage types",
+              "Support both light and dark modes"
+            ],
+            "validation": "Icons help quickly identify stages"
+          },
+          {
+            "task_id": "5.3",
+            "title": "Status badges and indicators",
+            "files": ["frontend/src/components/bento/StatusBadge.tsx"],
+            "implementation": [
+              "Pending: gray dot + 'Waiting'",
+              "Running: blue animated dot + 'Processing'",
+              "Complete: green checkmark + 'Done'",
+              "Error: red X + 'Failed'",
+              "Position in top-right corner",
+              "Add tooltip on hover"
+            ],
+            "validation": "Status immediately clear from badge"
+          }
+        ]
+      },
+      {
+        "phase": 6,
+        "name": "Responsive & Accessibility",
+        "priority": "high",
+        "duration": "30 minutes",
+        "tasks": [
+          {
+            "task_id": "6.1",
+            "title": "Responsive testing and refinement",
+            "files": ["frontend/src/components/bento/*"],
+            "implementation": [
+              "Test on mobile (375px, 414px)",
+              "Test on tablet (768px, 1024px)",
+              "Test on desktop (1280px, 1440px, 1920px)",
+              "Adjust font sizes for each breakpoint",
+              "Ensure touch targets >= 44px on mobile",
+              "Test with browser zoom 50%-200%"
+            ],
+            "validation": "Perfect layout at all sizes and zoom levels"
+          },
+          {
+            "task_id": "6.2",
+            "title": "Accessibility improvements",
+            "files": ["frontend/src/components/bento/*"],
+            "implementation": [
+              "Add proper ARIA labels and roles",
+              "Ensure focus visible indicators",
+              "Add skip links for keyboard navigation",
+              "Test with screen reader (NVDA/JAWS)",
+              "Add prefers-reduced-motion support",
+              "Ensure color contrast >= 4.5:1"
+            ],
+            "validation": "WCAG AA compliant, keyboard navigable"
+          },
+          {
+            "task_id": "6.3",
+            "title": "Performance optimization",
+            "files": ["frontend/src/components/bento/*"],
+            "implementation": [
+              "Use React.memo for card components",
+              "Implement virtualization for large grids",
+              "Lazy load heavy visualizations",
+              "Use CSS containment for cards",
+              "Profile with React DevTools",
+              "Target 60fps animations"
+            ],
+            "validation": "Smooth performance with 7+ cards"
+          }
+        ]
+      },
+      {
+        "phase": 7,
+        "name": "Testing & Documentation",
+        "priority": "high",
+        "duration": "45 minutes",
+        "tasks": [
+          {
+            "task_id": "7.1",
+            "title": "Unit tests for components",
+            "files": ["frontend/src/components/bento/*.test.tsx"],
+            "implementation": [
+              "Test StageBentoCard with all states",
+              "Test BentoGrid with various card counts",
+              "Test preview components render correctly",
+              "Test animation triggers",
+              "Test responsive behavior",
+              "Aim for >85% coverage"
+            ],
+            "validation": "All tests pass"
+          },
+          {
+            "task_id": "7.2",
+            "title": "Visual regression tests",
+            "files": ["frontend/tests/visual/*"],
+            "implementation": [
+              "Capture screenshots of each card state",
+              "Test at multiple breakpoints",
+              "Use Percy or Chromatic for visual diffs",
+              "Baseline images for comparison"
+            ],
+            "validation": "No unintended visual changes"
+          },
+          {
+            "task_id": "7.3",
+            "title": "E2E tests for interactions",
+            "files": ["frontend/tests/e2e/bento-grid.spec.ts"],
+            "implementation": [
+              "Test card hover effects work",
+              "Test click to expand details",
+              "Test state transitions during pipeline",
+              "Test responsive breakpoints",
+              "Test accessibility with axe"
+            ],
+            "validation": "All interactions work as expected"
+          },
+          {
+            "task_id": "7.4",
+            "title": "Documentation",
+            "files": ["BENTO_DESIGN_SYSTEM.md"],
+            "implementation": [
+              "Document grid system and breakpoints",
+              "Document glassmorphism CSS patterns",
+              "Document animation system",
+              "Document accessibility features",
+              "Add screenshots and examples",
+              "Create component usage guide"
+            ],
+            "validation": "Complete documentation for future reference"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "css_patterns": {
+    "glassmorphism_card": {
+      "css": "backdrop-filter: blur(12px) saturate(180%);\nbackground: rgba(255, 255, 255, 0.1);\nborder: 1px solid rgba(255, 255, 255, 0.2);\nborder-radius: 16px;\nbox-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15),\n            inset 0 1px 0 0 rgba(255, 255, 255, 0.3);"
+    },
+    "animated_gradient_background": {
+      "css": "background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 100%);\nbackground-size: 400% 400%;\nanimation: gradient 15s ease infinite;\n\n@keyframes gradient {\n  0%, 100% { background-position: 0% 50%; }\n  50% { background-position: 100% 50%; }\n}"
+    },
+    "shimmer_loading": {
+      "css": "background: linear-gradient(90deg,\n  rgba(255, 255, 255, 0.0) 0%,\n  rgba(255, 255, 255, 0.1) 50%,\n  rgba(255, 255, 255, 0.0) 100%);\nbackground-size: 200% 100%;\nanimation: shimmer 1.5s infinite;"
+    },
+    "card_hover_lift": {
+      "css": "transition: all 0.2s ease-out;\n\n&:hover {\n  transform: translateY(-4px);\n  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);\n  border-color: rgba(255, 255, 255, 0.3);\n}"
+    }
+  },
+  
+  "success_criteria": {
+    "functional": [
+      "✅ No card overlapping at any screen size",
+      "✅ All 7 stages render in organized grid",
+      "✅ Glassmorphism effect looks premium",
+      "✅ Each stage shows relevant data preview",
+      "✅ State transitions are smooth and clear",
+      "✅ Loading states are engaging",
+      "✅ Responsive from 320px to 2560px",
+      "✅ WCAG AA accessibility compliant",
+      "✅ 60fps animations",
+      "✅ All tests pass"
+    ],
+    "aesthetic": [
+      "✅ Matches state-of-the-art design standards",
+      "✅ Visual hierarchy is clear",
+      "✅ Colors are harmonious and purposeful",
+      "✅ Typography is beautiful and readable",
+      "✅ Animations feel intentional and polished",
+      "✅ Overall impression is 'wow, this is beautiful'"
+    ]
+  },
+  
+  "dependencies": {
+    "existing": [
+      "React 18.2.0",
+      "Framer Motion 10.18.0",
+      "Tailwind CSS 3.4.1",
+      "Lucide React (icons)"
+    ],
+    "new": [
+      {
+        "package": "recharts",
+        "version": "^2.10.0",
+        "purpose": "Mini charts in cards",
+        "install": "npm install recharts"
+      }
+    ]
+  },
+  
+  "estimated_timeline": "4-5 hours for complete implementation and testing",
+  
+  "rollback_strategy": {
+    "approach": "Git feature branch with atomic commits",
+    "checkpoints": [
+      "After Phase 1: Layout fixes should show no overlap",
+      "After Phase 2: Glassmorphism should be visible",
+      "After Phase 3: Data previews should render",
+      "After Phase 4: Animations should play smoothly"
+    ],
+    "rollback_commands": [
+      "git reset --hard HEAD~1 (undo last commit)",
+      "git checkout main -- path/to/file (restore single file)"
+    ]
+  },
+  
+  "autonomous_execution_notes": {
+    "start_with": "Phase 1 - Critical layout fixes first",
+    "test_after_each_phase": true,
+    "commit_after_each_phase": true,
+    "commit_message_format": "feat(bento): [phase] - [what was done]",
+    "validation_approach": "Run app, visually inspect, run tests, check console for errors",
+    "self_healing": "If phase fails, analyze error, fix, retest before moving to next phase",
+    "learning_reminders": [
+      "Always test responsive behavior - check mobile, tablet, desktop",
+      "Glassmorphism requires backdrop-filter support check",
+      "Framer Motion animations should use layout animations for smoother transitions",
+      "CSS Grid is better than flexbox for complex layouts like bento",
+      "Use CSS custom properties for dynamic theming",
+      "Profile performance with React DevTools Profiler",
+      "Test with real data, not just mocks"
+    ]
+  }
+}

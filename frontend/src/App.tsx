@@ -24,34 +24,40 @@ function App() {
   return (
     <div 
       className={`
-        min-h-screen p-8 relative overflow-hidden transition-all duration-700
+        min-h-screen p-4 sm:p-8 relative overflow-hidden transition-all duration-700
         ${isDarkMode
-          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-          : 'bg-gradient-to-br from-[#E8DCC8] via-[#F0E6D2] to-[#E8DCC8]'
+          ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
+          : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'
         }
       `}
     >
-      {/* Animated background orbs */}
-      <div 
-        className={`
-          absolute top-20 left-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl animate-pulse
-          ${isDarkMode ? 'bg-primary/15' : 'bg-primary/10'}
-        `}
-      />
-      <div 
-        className={`
-          absolute bottom-20 right-20 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl animate-pulse
-          ${isDarkMode ? 'bg-primary-light/15' : 'bg-primary-light/10'}
-        `}
-        style={{ animationDelay: '1s' }}
-      />
-      <div 
-        className={`
-          absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl animate-pulse
-          ${isDarkMode ? 'bg-accent/10' : 'bg-accent/8'}
-        `}
-        style={{ animationDelay: '2s' }}
-      />
+      {/* Enhanced animated background mesh */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className={`
+            absolute top-0 -left-40 w-[600px] h-[600px] rounded-full
+            mix-blend-multiply filter blur-3xl opacity-70
+            animate-blob
+            ${isDarkMode ? 'bg-purple-500' : 'bg-purple-300'}
+          `}
+        />
+        <div 
+          className={`
+            absolute top-0 -right-40 w-[600px] h-[600px] rounded-full
+            mix-blend-multiply filter blur-3xl opacity-70
+            animate-blob animation-delay-2000
+            ${isDarkMode ? 'bg-blue-500' : 'bg-blue-300'}
+          `}
+        />
+        <div 
+          className={`
+            absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full
+            mix-blend-multiply filter blur-3xl opacity-70
+            animate-blob animation-delay-4000
+            ${isDarkMode ? 'bg-pink-500' : 'bg-pink-300'}
+          `}
+        />
+      </div>
       
       {/* Main content */}
       <div className="max-w-7xl mx-auto relative z-10">

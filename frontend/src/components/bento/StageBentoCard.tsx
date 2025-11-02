@@ -73,28 +73,34 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
   
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ 
         opacity: 1, 
-        scale: isActive ? 1 : 0.95, 
-        y: 0 
+        scale: 1
       }}
       transition={{ 
-        duration: 0.5,
-        delay: stage.id * 0.1,
-        type: 'spring',
-        stiffness: 100
+        duration: 0.4,
+        ease: "easeOut"
       }}
       className={`
-        relative group backdrop-blur-xl rounded-3xl p-6 border
-        transition-all duration-500 cursor-pointer overflow-hidden
+        relative group
+        h-full w-full
+        backdrop-blur-xl rounded-3xl p-6 border
+        transition-all duration-300 cursor-pointer
+        overflow-hidden
         ${isActive ? 'shadow-2xl' : 'shadow-lg'}
         ${isDark 
-          ? 'bg-white/5 border-white/10 hover:bg-white/10' 
-          : 'bg-white/50 border-primary/20 hover:bg-white/70'
+          ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20' 
+          : 'bg-white/50 border-primary/20 hover:bg-white/70 hover:border-primary/30'
         }
+        ${stage.status === 'running' ? 'ring-2 ring-blue-400/50 animate-pulse' : ''}
+        ${stage.status === 'completed' ? 'ring-1 ring-green-400/30' : ''}
+        ${stage.status === 'error' ? 'ring-2 ring-red-400/50' : ''}
       `}
-      whileHover={{ scale: 1.02, y: -4 }}
+      whileHover={{ 
+        y: -4,
+        transition: { duration: 0.2 }
+      }}
     >
       {/* Gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
