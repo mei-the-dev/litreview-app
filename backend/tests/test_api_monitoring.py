@@ -99,10 +99,11 @@ async def test_huggingface_api_key_validity():
     # Try simple API call to validate key
     async with httpx.AsyncClient() as client:
         try:
+            # Use correct format for sentence-transformers models
             response = await client.post(
-                "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2",
+                "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2",
                 headers={"Authorization": f"Bearer {settings.hf_token}"},
-                json={"inputs": "test"},
+                json={"inputs": ["test sentence"]},
                 timeout=10.0
             )
             
