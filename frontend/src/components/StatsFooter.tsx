@@ -20,22 +20,22 @@ export const StatsFooter: React.FC = () => {
         mt-8 glass-artistic rounded-3xl p-6 border shadow-2xl
         flex justify-around items-center
         ${isDarkMode 
-          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10' 
-          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10 hover:from-white/12 hover:via-white/8 hover:to-white/5 hover:border-secondary/40' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30 hover:from-white/90 hover:via-white/80 hover:to-white/70 hover:border-primary/50'
         }
       `}
     >
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Activity className={`w-5 h-5 ${isDarkMode ? 'text-secondary-light' : 'text-primary-dark'}`} />
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <Activity className={`w-5 h-5 ${isDarkMode ? 'text-secondary' : 'text-primary'}`} />
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-secondary-theme-dark' : 'text-secondary-theme-light'}`}>
             Pipeline Progress
           </p>
         </div>
         <p className={`text-3xl font-bold bg-gradient-to-r ${
           isDarkMode 
-            ? 'from-primary-light to-secondary-light bg-clip-text text-transparent' 
-            : 'from-primary-dark to-primary bg-clip-text text-transparent'
+            ? 'from-sunset-gold to-sunset-amber bg-clip-text text-transparent' 
+            : 'from-primary to-sunset-amber bg-clip-text text-transparent'
         }`}>
           {totalStages > 0 ? `${completedStages}/${totalStages}` : '0/7'}
         </p>
@@ -45,15 +45,15 @@ export const StatsFooter: React.FC = () => {
       
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <FileText className={`w-5 h-5 ${isDarkMode ? 'text-secondary-light' : 'text-primary-dark'}`} />
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <FileText className={`w-5 h-5 ${isDarkMode ? 'text-secondary' : 'text-primary'}`} />
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-secondary-theme-dark' : 'text-secondary-theme-light'}`}>
             Papers Analyzed
           </p>
         </div>
         <p className={`text-3xl font-bold bg-gradient-to-r ${
           isDarkMode 
-            ? 'from-primary-light to-secondary-light bg-clip-text text-transparent' 
-            : 'from-primary-dark to-primary bg-clip-text text-transparent'
+            ? 'from-sunset-gold to-sunset-amber bg-clip-text text-transparent' 
+            : 'from-primary to-sunset-amber bg-clip-text text-transparent'
         }`}>
           {report?.total_papers || 0}
         </p>
@@ -63,8 +63,8 @@ export const StatsFooter: React.FC = () => {
       
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Network className={`w-5 h-5 ${isDarkMode ? 'text-secondary-light' : 'text-primary-dark'}`} />
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <Network className={`w-5 h-5 ${isDarkMode ? 'text-secondary' : 'text-primary'}`} />
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-secondary-theme-dark' : 'text-secondary-theme-light'}`}>
             Status
           </p>
         </div>
@@ -73,10 +73,10 @@ export const StatsFooter: React.FC = () => {
           transition={{ duration: 2, repeat: Infinity }}
           className={`text-3xl font-bold ${
             isRunning
-              ? isDarkMode ? 'text-info' : 'text-info'
+              ? 'text-info'
               : completedStages === totalStages && totalStages > 0
               ? 'text-success'
-              : isDarkMode ? 'text-secondary-light' : 'text-primary-dark'
+              : isDarkMode ? 'text-secondary' : 'text-primary'
           }`}
         >
           {isRunning ? 'Running' : completedStages === totalStages && totalStages > 0 ? 'Complete' : 'Ready'}

@@ -90,10 +90,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         transition-all duration-500 cursor-pointer
         overflow-hidden
         ${isActive ? 'shadow-glass-lg' : 'shadow-glass'}
-        ${isDark 
-          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10 hover:from-white/12 hover:via-white/8 hover:to-white/5 hover:border-secondary/40' 
-          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30 hover:from-white/90 hover:via-white/80 hover:to-white/70 hover:border-primary/50'
-        }
+        ${isDark ? 'glass-card-dark' : 'glass-card-light'}
         ${stage.status === 'running' ? 'ring-2 ring-primary/60 shadow-glow animate-pulse-glow' : ''}
         ${stage.status === 'completed' ? 'ring-1 ring-success/40 shadow-[0_0_15px_rgba(139,195,74,0.2)]' : ''}
         ${stage.status === 'error' ? 'ring-2 ring-danger/60 shadow-[0_0_15px_rgba(255,112,67,0.3)]' : ''}

@@ -16,23 +16,21 @@ export const Header: React.FC = () => {
       className={`
         glass-artistic rounded-3xl p-8 border shadow-2xl mb-8
         ${isDarkMode 
-          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10' 
-          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10 hover:from-white/12 hover:via-white/8 hover:to-white/5 hover:border-secondary/40' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30 hover:from-white/90 hover:via-white/80 hover:to-white/70 hover:border-primary/50'
         }
       `}
     >
       <div className="flex items-center justify-between">
         <div>
           <h1 
-            className={`text-5xl font-bold mb-2 bg-gradient-to-r ${
-              isDarkMode
-                ? 'from-sunset-gold via-horizon-cream to-sunset-amber text-golden-glow'
-                : 'from-twilight-navy via-sunset-coral to-sunset-amber'
-            } bg-clip-text text-transparent drop-shadow-lg`}
+            className={`text-5xl font-bold mb-2 ${
+              isDarkMode ? 'gradient-title-dark' : 'gradient-title-light'
+            } drop-shadow-lg`}
           >
             LitReview
           </h1>
-          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <p className={`text-lg ${isDarkMode ? 'text-secondary-theme-dark' : 'text-secondary-theme-light'}`}>
             Automated Academic Literature Review System
           </p>
         </div>

@@ -28,6 +28,42 @@
   --horizon-cream: #FFEFD5;
 }
 
+@layer components {
+  /* Standardized Gradient Text for Titles */
+  .gradient-title-dark {
+    @apply bg-gradient-to-r from-sunset-gold via-horizon-cream to-sunset-amber bg-clip-text text-transparent;
+  }
+  
+  .gradient-title-light {
+    @apply bg-gradient-to-r from-twilight-navy via-sunset-coral to-sunset-amber bg-clip-text text-transparent;
+  }
+  
+  /* Standardized Text Colors - using Tailwind classes directly */
+  .text-primary-theme-dark {
+    @apply text-horizon-cream;
+  }
+  
+  .text-primary-theme-light {
+    @apply text-twilight-navy;
+  }
+  
+  .text-secondary-theme-dark {
+    @apply text-gray-300;
+  }
+  
+  .text-secondary-theme-light {
+    @apply text-gray-700;
+  }
+  
+  .text-muted-dark {
+    @apply text-gray-400;
+  }
+  
+  .text-muted-light {
+    @apply text-gray-600;
+  }
+}
+
 /* Custom slider styles */
 .slider::-webkit-slider-thumb {
   appearance: none;

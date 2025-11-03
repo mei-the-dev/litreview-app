@@ -62,8 +62,8 @@ export const QueryInput: React.FC = () => {
       className={`
         glass-artistic rounded-3xl p-8 border shadow-2xl
         ${isDarkMode 
-          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10' 
-          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10 hover:from-white/12 hover:via-white/8 hover:to-white/5 hover:border-secondary/40' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30 hover:from-white/90 hover:via-white/80 hover:to-white/70 hover:border-primary/50'
         }
       `}
     >
@@ -72,7 +72,7 @@ export const QueryInput: React.FC = () => {
         <div>
           <label 
             className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? 'text-gray-200' : 'text-gray-700'
+              isDarkMode ? 'text-primary-theme-dark' : 'text-primary-theme-light'
             }`}
           >
             Research Keywords
@@ -88,10 +88,10 @@ export const QueryInput: React.FC = () => {
                 exit={{ scale: 0 }}
                 className={`
                   inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold
-                  backdrop-blur-md border transition-all
+                  backdrop-blur-md border transition-all shadow-lg
                   ${isDarkMode 
-                    ? 'bg-gradient-to-r from-sunset-amber/35 to-sunset-gold/30 border-sunset-gold/40 text-horizon-cream shadow-[0_0_15px_rgba(255,157,92,0.25)]' 
-                    : 'bg-gradient-to-r from-sunset-peach/60 to-sunset-gold/30 border-sunset-coral/40 text-twilight-navy shadow-[0_0_10px_rgba(255,138,91,0.2)]'
+                    ? 'bg-gradient-to-r from-sunset-amber/35 to-sunset-gold/30 border-sunset-gold/40 text-horizon-cream hover:from-sunset-amber/45 hover:to-sunset-gold/40' 
+                    : 'bg-gradient-to-r from-sunset-peach/50 to-sunset-gold/30 border-sunset-coral/40 text-twilight-navy hover:from-sunset-peach/60 hover:to-sunset-gold/40'
                   }
                 `}
               >
@@ -148,7 +148,7 @@ export const QueryInput: React.FC = () => {
         <div>
           <label 
             className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? 'text-gray-200' : 'text-gray-700'
+              isDarkMode ? 'text-primary-theme-dark' : 'text-primary-theme-light'
             }`}
           >
             Maximum Papers: {maxPapers}
