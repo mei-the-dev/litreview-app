@@ -1,0 +1,480 @@
+{
+  "marko_version": "1.0",
+  "project": "LitReview Stage Cards & Layout Improvement",
+  "created": "2025-11-03",
+  "objective": "Rework stage cards to display incremental, persistent update details with improved layout and data presentation",
+  
+  "context": {
+    "current_state": {
+      "strengths": [
+        "Stage 6 has detailed sub-task tracking in backend (overview, theme_analysis, methodology_grouping, top_papers_compilation, synthesis_writing)",
+        "Pipeline events are logged with detailed data payloads to logs/pipeline_events.log",
+        "StageDataPreview component already shows some data for completed stages",
+        "WebSocket updates provide real-time progress and data updates",
+        "Beautiful sunset-inspired glassmorphism UI with excellent color theming"
+      ],
+      "issues": [
+        "Stage cards only show final results, not incremental progress details",
+        "Stage 6 detailed progress is lost - only shows current sub-task, not history of completed sub-tasks",
+        "Running stage updates overwrite previous information instead of accumulating",
+        "No visual history/timeline of what work has been completed within a stage",
+        "Homepage layout is basic grid - could better utilize space for information density",
+        "Stage cards don't persist intermediate results for later review",
+        "No expandable/collapsible detail sections for deeper inspection",
+        "Limited visual differentiation between stages at different progress levels"
+      ]
+    },
+    "user_requirements": {
+      "primary": [
+        "Show incremental updates that persist as stage progresses",
+        "Visualize the pipeline of work within each stage (especially Stage 6)",
+        "Better use of pipeline logging to populate stage cards with meaningful updates",
+        "Improve interpretability of what's happening at each step",
+        "Enhanced homepage layout for better information presentation"
+      ],
+      "user_quote": "We should have some sort of way for each step in bento grid to show, communicate, express, the state of the data at that point"
+    }
+  },
+  
+  "analysis": {
+    "technical_insights": [
+      "Backend already sends rich data payloads in stage_update events (e.g., sub_task, current_theme, theme_count, model info)",
+      "Frontend pipelineStore receives updates but stage.data is overwritten on each update",
+      "Need to accumulate stage.data updates into a history array instead of replacing",
+      "StageDataPreview can be enhanced to show timeline/history of updates",
+      "Grid layout is responsive but could use asymmetric sizing for visual interest"
+    ],
+    "design_opportunities": [
+      "Add expandable timeline/accordion within cards to show update history",
+      "Create 'activity feed' style sub-component showing completed milestones",
+      "Use micro-animations to highlight new updates as they arrive",
+      "Add visual progress checklist for multi-step stages like Stage 6",
+      "Implement card 'memory' - show faded history alongside current state",
+      "Enhance layout with feature cards (larger cards for stages 1, 6, 7)"
+    ]
+  },
+  
+  "plan": {
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Data Model Enhancement",
+        "description": "Update pipelineStore to accumulate stage update history instead of overwriting",
+        "tasks": [
+          {
+            "id": "1.1",
+            "name": "Add updateHistory to PipelineStage type",
+            "files": ["frontend/src/types/pipeline.types.ts"],
+            "changes": [
+              "Add updateHistory: Array<{timestamp: string, progress: number, message: string, data: any}> to PipelineStage",
+              "Add lastUpdate: {timestamp, progress, message, data} for quick access to latest",
+              "Keep existing fields for backward compatibility"
+            ]
+          },
+          {
+            "id": "1.2",
+            "name": "Enhance pipelineStore.updateStage to accumulate history",
+            "files": ["frontend/src/stores/pipelineStore.ts"],
+            "changes": [
+              "When updateStage is called, append to updateHistory array instead of replacing data",
+              "Set lastUpdate to the new update",
+              "Keep updateHistory limited to last 50 updates to prevent memory issues",
+              "Add timestamp to each update entry"
+            ]
+          },
+          {
+            "id": "1.3",
+            "name": "Update WebSocket hook to pass timestamps",
+            "files": ["frontend/src/hooks/useWebSocket.ts"],
+            "changes": [
+              "Ensure stage_update events include timestamp",
+              "Pass full update payload to updateStage including data field"
+            ]
+          }
+        ],
+        "validation": [
+          "Console.log shows updateHistory array growing as updates arrive",
+          "Stage 6 history shows all sub-tasks completed",
+          "Memory usage remains stable (< 10MB for typical pipeline)"
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Stage Card Visual Enhancement",
+        "description": "Redesign StageBentoCard to show persistent update timeline",
+        "tasks": [
+          {
+            "id": "2.1",
+            "name": "Create StageUpdateTimeline sub-component",
+            "files": ["frontend/src/components/bento/StageUpdateTimeline.tsx"],
+            "changes": [
+              "New component that renders update history as vertical timeline",
+              "Show checkmarks for completed sub-tasks",
+              "Show spinner for current task",
+              "Display timestamps, progress percentages, data highlights",
+              "Collapsible/expandable with smooth animation",
+              "Max height with scroll for many updates"
+            ],
+            "design": {
+              "style": "Minimal vertical timeline with dots connected by lines",
+              "colors": "Use sunset-gold for completed items, primary for current, gray for pending",
+              "glassmorphism": "Subtle glass background for timeline container"
+            }
+          },
+          {
+            "id": "2.2",
+            "name": "Create StageProgressChecklist component",
+            "files": ["frontend/src/components/bento/StageProgressChecklist.tsx"],
+            "changes": [
+              "Component specifically for Stage 6 showing sub-task checklist",
+              "Tasks: Initialization → Overview → Theme Analysis → Methodology → Top Papers → AI Synthesis → Finalization",
+              "Visual: Horizontal or vertical progress bar with labeled checkpoints",
+              "Show current task highlighted, completed tasks checked, pending tasks grayed",
+              "Include mini stats (e.g., '5/12 themes analyzed')"
+            ]
+          },
+          {
+            "id": "2.3",
+            "name": "Enhance StageBentoCard with collapsible details",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "changes": [
+              "Add expand/collapse button to show/hide update history",
+              "Use Framer Motion AnimatePresence for smooth expansion",
+              "When collapsed: show summary (current message + key stats)",
+              "When expanded: show StageUpdateTimeline or StageProgressChecklist",
+              "Add 'Show Details' / 'Hide Details' toggle button with icon",
+              "Persist expansion state per stage in local storage"
+            ]
+          },
+          {
+            "id": "2.4",
+            "name": "Enhance StageDataPreview with historical data",
+            "files": ["frontend/src/components/bento/previews/StageDataPreview.tsx"],
+            "changes": [
+              "For Stage 6: Show completed sub-tasks list with checkmarks",
+              "Add 'mini-cards' showing intermediate stats (themes processed, methods found)",
+              "Use updateHistory to extract cumulative information",
+              "Add subtle animations when new data appears"
+            ]
+          }
+        ],
+        "validation": [
+          "Stage cards can expand to show detailed timeline",
+          "Stage 6 shows all sub-tasks with progress",
+          "Animations are smooth (60fps)",
+          "Expansion state persists across sessions"
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Homepage Layout Optimization",
+        "description": "Improve grid layout and information architecture",
+        "tasks": [
+          {
+            "id": "3.1",
+            "name": "Implement asymmetric bento grid layout",
+            "files": ["frontend/src/components/bento/BentoGrid.tsx"],
+            "changes": [
+              "Stage 1 (Fetching): 2x1 card (wide) - shows search query and source stats",
+              "Stage 2-5: 1x1 cards - compact but informative",
+              "Stage 6 (Synthesis): 2x2 card (large) - shows detailed sub-task progress",
+              "Stage 7 (PDF): 2x1 card (wide) - shows PDF preview and download",
+              "Responsive: Collapse to 1-column on mobile, 2-column on tablet, full bento on desktop",
+              "Add subtle stagger animation on initial load"
+            ],
+            "design": {
+              "desktop": "4-column grid with strategic spanning",
+              "tablet": "2-column with adjusted spans",
+              "mobile": "Single column stack"
+            }
+          },
+          {
+            "id": "3.2",
+            "name": "Add QueryInput position optimization",
+            "files": ["frontend/src/App.tsx", "frontend/src/components/QueryInput.tsx"],
+            "changes": [
+              "When pipeline is running: Shrink QueryInput to compact mode at top",
+              "Compact mode: Single line with query text + new query button",
+              "Frees up vertical space for stage cards",
+              "Smooth transition animation between modes"
+            ]
+          },
+          {
+            "id": "3.3",
+            "name": "Add summary header above grid",
+            "files": ["frontend/src/components/bento/PipelineSummaryHeader.tsx", "frontend/src/App.tsx"],
+            "changes": [
+              "Create new PipelineSummaryHeader component",
+              "Shows: Query keywords, total time elapsed, current stage name, overall progress bar",
+              "Glassmorphic card style matching theme",
+              "Positioned above BentoGrid",
+              "Only visible when pipeline is running or completed"
+            ]
+          }
+        ],
+        "validation": [
+          "Layout looks balanced and uses space effectively",
+          "Stage 6 has room to show detailed information",
+          "Responsive behavior works on all breakpoints",
+          "Visual hierarchy guides eye to important information"
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Live Update Micro-interactions",
+        "description": "Add animations and visual feedback for real-time updates",
+        "tasks": [
+          {
+            "id": "4.1",
+            "name": "Add 'new update' pulse animation",
+            "files": ["frontend/src/components/bento/StageBentoCard.tsx"],
+            "changes": [
+              "When stage receives new update, trigger subtle pulse animation on card",
+              "Highlight the updated section (e.g., progress bar, message text)",
+              "Use Framer Motion's layout animations for smooth transitions",
+              "Duration: 400ms, easing: ease-out"
+            ]
+          },
+          {
+            "id": "4.2",
+            "name": "Add 'milestone completed' celebration",
+            "files": ["frontend/src/components/bento/StageUpdateTimeline.tsx"],
+            "changes": [
+              "When sub-task completes (status changes to complete), show brief celebration",
+              "Effect: Checkmark icon scale + glow pulse",
+              "Add confetti micro-animation for major milestones (Stage 1 complete, Stage 6 complete, Stage 7 complete)",
+              "Use canvas-confetti library for lightweight confetti effect"
+            ]
+          },
+          {
+            "id": "4.3",
+            "name": "Add typing indicator for AI tasks",
+            "files": ["frontend/src/components/bento/previews/StageDataPreview.tsx"],
+            "changes": [
+              "When Stage 6 is running AI inference, show animated typing indicator",
+              "Show 'AI is writing...' with three-dot animation",
+              "Display model name being used (e.g., 'facebook/bart-large-cnn')"
+            ]
+          }
+        ],
+        "validation": [
+          "Updates feel responsive and alive",
+          "Animations don't distract from content",
+          "Performance remains smooth (60fps)",
+          "Accessibility: Animations respect prefers-reduced-motion"
+        ]
+      },
+      {
+        "phase": 5,
+        "name": "Data Persistence & Review Mode",
+        "description": "Allow reviewing completed pipelines with all details preserved",
+        "tasks": [
+          {
+            "id": "5.1",
+            "name": "Enhance pipeline history with full update logs",
+            "files": ["frontend/src/stores/pipelineStore.ts"],
+            "changes": [
+              "When archivePipeline is called, save full stages array with updateHistory",
+              "Add getPipelineUpdateHistory(sessionId) selector",
+              "Add exportPipelineJSON(sessionId) to download complete pipeline data"
+            ]
+          },
+          {
+            "id": "5.2",
+            "name": "Add 'Replay Mode' for historical pipelines",
+            "files": ["frontend/src/components/PipelineReplay.tsx"],
+            "changes": [
+              "New component to replay pipeline execution from history",
+              "Show stages expanding at accelerated speed (e.g., 2x-10x faster)",
+              "Allow scrubbing through timeline",
+              "Useful for debugging and presentations"
+            ],
+            "priority": "optional",
+            "note": "Implement only if time permits"
+          }
+        ],
+        "validation": [
+          "Archived pipelines retain all update history",
+          "Can export complete pipeline trace as JSON",
+          "History size remains manageable (< 5MB per pipeline)"
+        ]
+      }
+    ]
+  },
+  
+  "implementation_strategy": {
+    "order": "Sequential phases 1 → 2 → 3 → 4 → (5 optional)",
+    "testing_approach": {
+      "unit_tests": [
+        "Test pipelineStore.updateStage accumulates history correctly",
+        "Test updateHistory array limits to 50 items",
+        "Test StageUpdateTimeline renders various history lengths"
+      ],
+      "integration_tests": [
+        "Test WebSocket updates populate updateHistory",
+        "Test Stage 6 progress checklist updates correctly",
+        "Test expand/collapse state persistence"
+      ],
+      "e2e_tests": [
+        "Run full pipeline and verify all updates are captured",
+        "Verify Stage 6 shows all 7 sub-tasks in timeline",
+        "Test responsive layout on mobile/tablet/desktop",
+        "Verify animations don't cause performance issues"
+      ],
+      "visual_tests": [
+        "Capture screenshots of each stage card (collapsed and expanded)",
+        "Verify glassmorphism effects render correctly",
+        "Check color contrast meets accessibility standards"
+      ]
+    },
+    "rollback_plan": {
+      "approach": "Feature flag controlled rollout",
+      "steps": [
+        "Add ENABLE_UPDATE_HISTORY feature flag in config",
+        "Deploy with flag OFF initially",
+        "Test in production with flag ON for single user",
+        "If issues arise, disable flag and investigate",
+        "Full rollout after validation"
+      ]
+    }
+  },
+  
+  "dependencies": {
+    "new_packages": [
+      {
+        "name": "canvas-confetti",
+        "version": "^1.9.0",
+        "purpose": "Celebration animations for milestone completions",
+        "optional": true
+      }
+    ],
+    "existing_packages": [
+      "framer-motion (already installed) - for animations",
+      "zustand (already installed) - for state management",
+      "lucide-react (already installed) - for icons"
+    ]
+  },
+  
+  "success_criteria": {
+    "functional": [
+      "Stage cards show cumulative update history, not just latest update",
+      "Stage 6 displays all 7 sub-tasks with individual progress",
+      "Update history persists and can be reviewed after completion",
+      "Layout makes efficient use of space without overlaps",
+      "Expandable sections work smoothly with animations"
+    ],
+    "non_functional": [
+      "No performance degradation (< 5% increase in render time)",
+      "Memory usage remains under 20MB for typical pipeline",
+      "Animations run at 60fps on mid-range devices",
+      "Accessibility score remains > 95 on Lighthouse",
+      "Works on Chrome, Firefox, Safari, Edge (latest versions)"
+    ],
+    "user_experience": [
+      "Users can understand what happened at each stage by reviewing card details",
+      "Stage 6 progress is transparent and not a 'black box'",
+      "Layout feels polished and professional",
+      "Updates feel live and responsive"
+    ]
+  },
+  
+  "risks_and_mitigations": {
+    "risks": [
+      {
+        "risk": "updateHistory array grows too large for long-running pipelines",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "mitigation": "Limit array to 50 items, use circular buffer, implement compression for archived pipelines"
+      },
+      {
+        "risk": "Expanded cards cause layout shifts and poor UX",
+        "likelihood": "Medium",
+        "impact": "High",
+        "mitigation": "Use AnimatePresence and layout animations, test expansion extensively, add max-height constraints"
+      },
+      {
+        "risk": "Too many animations cause performance issues",
+        "likelihood": "Low",
+        "impact": "High",
+        "mitigation": "Use CSS transforms (GPU-accelerated), respect prefers-reduced-motion, throttle animations"
+      },
+      {
+        "risk": "Complex state management introduces bugs",
+        "likelihood": "Medium",
+        "impact": "High",
+        "mitigation": "Comprehensive unit tests, console logging during development, gradual rollout with feature flag"
+      }
+    ]
+  },
+  
+  "monitoring_and_metrics": {
+    "technical_metrics": [
+      "Average updateHistory array size per stage",
+      "Render time for StageBentoCard component",
+      "Memory usage of pipelineStore",
+      "Animation frame rate (should be 60fps)"
+    ],
+    "user_metrics": [
+      "% of users who expand stage details",
+      "Average time spent reviewing completed pipeline",
+      "Error rate in WebSocket update handling"
+    ],
+    "logging": [
+      "Log when updateHistory reaches size limit",
+      "Log expansion/collapse events for usage analytics",
+      "Log any dropped WebSocket messages"
+    ]
+  },
+  
+  "documentation_updates": {
+    "files_to_update": [
+      "README.md - Add section on stage card details feature",
+      "frontend/src/components/bento/README.md - Document new components",
+      "DASHBOARD_GUIDE.md - Update with new UI capabilities"
+    ],
+    "code_comments": [
+      "Add JSDoc comments to updateHistory field explaining circular buffer",
+      "Comment the sub-task timeline structure in Stage 6",
+      "Document animation timing constants"
+    ]
+  },
+  
+  "future_enhancements": {
+    "ideas": [
+      "Add search/filter within updateHistory",
+      "Export update timeline as CSV for analysis",
+      "Add 'compare pipelines' view showing differences between two runs",
+      "Implement collapsible 'mini-map' showing all stages at once",
+      "Add real-time collaboration - multiple users watching same pipeline",
+      "Integrate with backend logging - click on update to see corresponding log entries"
+    ]
+  },
+  
+  "estimated_effort": {
+    "phase_1": "2-3 hours (data model changes)",
+    "phase_2": "4-6 hours (UI components)",
+    "phase_3": "3-4 hours (layout optimization)",
+    "phase_4": "2-3 hours (animations)",
+    "phase_5": "2-3 hours (persistence, optional)",
+    "total": "13-19 hours",
+    "complexity": "Medium-High (requires careful state management and animation tuning)"
+  },
+  
+  "ai_agent_instructions": {
+    "approach": "Implement phases sequentially with validation after each phase",
+    "key_points": [
+      "Preserve existing functionality - only enhance, don't break",
+      "Test with real WebSocket data, not mocked",
+      "Pay attention to animation performance",
+      "Keep color theming consistent with sunset design system",
+      "Add console.log debugging during development, remove before commit"
+    ],
+    "validation_commands": [
+      "./run.sh - Start app and run pipeline",
+      "npm test - Run unit tests",
+      "./run_e2e_tests.sh - Run E2E tests",
+      "Chrome DevTools Performance tab - Check animation FPS",
+      "React DevTools Profiler - Check render performance"
+    ]
+  }
+}

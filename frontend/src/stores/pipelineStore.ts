@@ -108,15 +108,41 @@ export const usePipelineStore = create<PipelineState>()(
           status: 'pending',
           progress: 0,
           message: 'Waiting...',
+          updateHistory: [],  // Initialize empty history
         })),
         currentView: 'pipeline'
       }),
       
-      updateStage: (stageId, update) => set((state) => ({
-        stages: state.stages.map((stage) =>
-          stage.id === stageId ? { ...stage, ...update } : stage
-        )
-      })),
+      updateStage: (stageId, update) => set((state) => {
+        const timestamp = new Date().toISOString();
+        
+        return {
+          stages: state.stages.map((stage) => {
+            if (stage.id !== stageId) return stage;
+            
+            // Create history entry for this update
+            const historyEntry = {
+              timestamp,
+              progress: update.progress ?? stage.progress,
+              message: update.message ?? stage.message,
+              data: update.data,
+            };
+            
+            // Accumulate history (limit to 50 entries)
+            const newHistory = [...(stage.updateHistory || []), historyEntry];
+            if (newHistory.length > 50) {
+              newHistory.shift(); // Remove oldest entry
+            }
+            
+            return {
+              ...stage,
+              ...update,
+              updateHistory: newHistory,
+              lastUpdate: historyEntry,
+            };
+          })
+        };
+      }),
       
       setReport: (report) => set({ report }),
       

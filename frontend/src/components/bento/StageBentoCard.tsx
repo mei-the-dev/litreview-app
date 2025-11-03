@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PipelineStage } from '@/types/pipeline.types';
 import { 
@@ -11,9 +11,13 @@ import {
   FileCheck,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { StageDataPreview } from './previews/StageDataPreview';
+import { StageUpdateTimeline } from './StageUpdateTimeline';
+import { StageProgressChecklist } from './StageProgressChecklist';
 
 interface StageBentoCardProps {
   stage: PipelineStage;
@@ -43,6 +47,41 @@ const STAGE_COLORS = [
 export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark }) => {
   const Icon = STAGE_ICONS[stage.id - 1];
   const gradientColor = STAGE_COLORS[stage.id - 1];
+  
+  // Expand/collapse state (persist in localStorage)
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const saved = localStorage.getItem(`stage-${stage.id}-expanded`);
+    return saved ? JSON.parse(saved) : false;
+  });
+  
+  // New update pulse animation
+  const [justUpdated, setJustUpdated] = useState(false);
+  const prevUpdateCountRef = React.useRef(stage.updateHistory?.length || 0);
+  
+  // Detect new updates
+  useEffect(() => {
+    const currentCount = stage.updateHistory?.length || 0;
+    if (currentCount > prevUpdateCountRef.current && stage.status === 'running') {
+      setJustUpdated(true);
+      setTimeout(() => setJustUpdated(false), 600);
+    }
+    prevUpdateCountRef.current = currentCount;
+  }, [stage.updateHistory, stage.status]);
+  
+  // Auto-expand Stage 6 when it's running
+  useEffect(() => {
+    if (stage.id === 6 && stage.status === 'running' && !isExpanded) {
+      setIsExpanded(true);
+    }
+  }, [stage.id, stage.status, isExpanded]);
+  
+  // Persist expansion state
+  useEffect(() => {
+    localStorage.setItem(`stage-${stage.id}-expanded`, JSON.stringify(isExpanded));
+  }, [isExpanded, stage.id]);
+  
+  const hasUpdateHistory = stage.updateHistory && stage.updateHistory.length > 0;
+  const showExpandButton = hasUpdateHistory || stage.id === 6;
   
   const getStatusIcon = () => {
     switch (stage.status) {
@@ -77,7 +116,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ 
         opacity: 1, 
-        scale: 1
+        scale: justUpdated ? 1.02 : 1
       }}
       transition={{ 
         duration: 0.4,
@@ -94,6 +133,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         ${stage.status === 'running' ? 'ring-2 ring-primary/60 shadow-glow animate-pulse-glow' : ''}
         ${stage.status === 'completed' ? 'ring-1 ring-success/40 shadow-[0_0_15px_rgba(139,195,74,0.2)]' : ''}
         ${stage.status === 'error' ? 'ring-2 ring-danger/60 shadow-[0_0_15px_rgba(255,112,67,0.3)]' : ''}
+        ${justUpdated ? 'ring-4 ring-primary/80' : ''}
       `}
       whileHover={{ 
         y: -6,
@@ -211,6 +251,55 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           <div className="mt-4 text-xs text-gray-400">
             Completed in {((stage.endTime - stage.startTime) / 1000).toFixed(1)}s
           </div>
+        )}
+        
+        {/* Expand/Collapse button */}
+        {showExpandButton && (
+          <motion.button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`
+              mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl
+              transition-all duration-300 border
+              ${isDark 
+                ? 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 text-gray-300' 
+                : 'bg-white/40 hover:bg-white/60 border-gray-200/50 hover:border-gray-300 text-gray-700'
+              }
+            `}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="w-4 h-4" />
+                <span className="text-sm font-medium">Hide Details</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  Show Details {hasUpdateHistory && `(${stage.updateHistory.length})`}
+                </span>
+              </>
+            )}
+          </motion.button>
+        )}
+        
+        {/* Stage 6 specific: Progress Checklist */}
+        {stage.id === 6 && isExpanded && stage.updateHistory && (
+          <StageProgressChecklist
+            updateHistory={stage.updateHistory}
+            currentProgress={stage.progress}
+            isDark={isDark}
+          />
+        )}
+        
+        {/* General timeline for all stages */}
+        {stage.id !== 6 && stage.updateHistory && (
+          <StageUpdateTimeline
+            updateHistory={stage.updateHistory}
+            isDark={isDark}
+            isExpanded={isExpanded}
+          />
         )}
         
         {/* Enhanced Result preview with StageDataPreview component */}

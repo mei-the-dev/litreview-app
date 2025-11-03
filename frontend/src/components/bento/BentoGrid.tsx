@@ -19,7 +19,7 @@ export const BentoGrid: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="w-full"
     >
-      {/* Responsive Bento Grid - No Overlapping, Perfect Layout */}
+      {/* Responsive Bento Grid - Asymmetric Layout with Stage 6 Emphasis */}
       <div className="
         grid gap-4 sm:gap-5 lg:gap-6
         grid-cols-1
@@ -42,9 +42,12 @@ export const BentoGrid: React.FC = () => {
             className={`
               ${stage.id === 1 || stage.id === 7
                 ? 'sm:col-span-2 lg:col-span-2 xl:col-span-2'
+                : stage.id === 6
+                ? 'sm:col-span-2 lg:col-span-3 xl:col-span-2 lg:row-span-2'
                 : 'col-span-1'
               }
               min-h-[300px]
+              ${stage.id === 6 ? 'min-h-[450px]' : ''}
               h-fit
               w-full
             `}

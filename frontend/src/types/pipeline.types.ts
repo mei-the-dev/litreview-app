@@ -37,6 +37,13 @@ export interface StageUpdate {
   timestamp: string;
 }
 
+export interface StageUpdateHistoryEntry {
+  timestamp: string;
+  progress: number;
+  message: string;
+  data?: any;
+}
+
 export interface PipelineStage {
   id: number;
   name: string;
@@ -44,9 +51,11 @@ export interface PipelineStage {
   progress: number;
   message: string;
   result?: any;
-  data?: any;  // Added for real-time sub-task data
+  data?: any;  // Current real-time sub-task data
   startTime?: number;
   endTime?: number;
+  updateHistory: StageUpdateHistoryEntry[];  // Accumulated updates for this stage
+  lastUpdate?: StageUpdateHistoryEntry;  // Quick access to most recent update
 }
 
 export interface LiteratureReviewReport {

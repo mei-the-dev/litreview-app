@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { Header } from '@/components/Header';
 import { QueryInput } from '@/components/QueryInput';
 import { BentoGrid } from '@/components/bento/BentoGrid';
+import { PipelineSummaryHeader } from '@/components/bento/PipelineSummaryHeader';
 import { StatsFooter } from '@/components/StatsFooter';
 import { ResultsView } from '@/components/results/ResultsView';
 
@@ -137,6 +138,9 @@ function App() {
         <Header />
         
         {currentView === 'pipeline' && <QueryInput />}
+        
+        {/* Pipeline Summary Header */}
+        {currentView === 'pipeline' && <PipelineSummaryHeader isDark={isDarkMode} />}
         
         <div className="mt-8">
           <AnimatePresence mode="wait">

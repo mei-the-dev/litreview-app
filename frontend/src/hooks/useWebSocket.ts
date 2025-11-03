@@ -39,6 +39,7 @@ export const useWebSocket = (sessionId: string | null) => {
             status: 'running',
             progress: update.progress || 0,
             message: update.message || 'Processing...',
+            data: update.data,  // Pass data field for sub-task tracking
             startTime: Date.now(),
           });
         }
