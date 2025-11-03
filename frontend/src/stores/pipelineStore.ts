@@ -74,7 +74,7 @@ const STAGE_NAMES = [
 
 export const usePipelineStore = create<PipelineState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       sessionId: null,
       stages: [],
       report: null,

@@ -60,10 +60,10 @@ export const QueryInput: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={`
-        backdrop-blur-xl rounded-3xl p-8 border shadow-2xl
+        glass-artistic rounded-3xl p-8 border shadow-2xl
         ${isDarkMode 
-          ? 'bg-white/5 border-white/10' 
-          : 'bg-white/50 border-primary/20'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30'
         }
       `}
     >
@@ -81,13 +81,17 @@ export const QueryInput: React.FC = () => {
           {/* Keyword tags */}
           <div className="flex flex-wrap gap-2 mb-3">
             {keywords.map((keyword) => (
-              <span
+              <motion.span
                 key={keyword}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
                 className={`
-                  inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+                  inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold
+                  backdrop-blur-md border transition-all
                   ${isDarkMode 
-                    ? 'bg-primary/20 text-accent' 
-                    : 'bg-primary/10 text-primary-dark'
+                    ? 'bg-gradient-to-r from-primary/30 to-secondary/25 border-primary/30 text-secondary-light shadow-[0_0_10px_rgba(193,143,50,0.2)]' 
+                    : 'bg-gradient-to-r from-secondary/50 to-primary/20 border-secondary/40 text-primary-dark shadow-[0_0_5px_rgba(193,143,50,0.15)]'
                   }
                 `}
               >
@@ -95,11 +99,11 @@ export const QueryInput: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => removeKeyword(keyword)}
-                  className="hover:opacity-70 transition-opacity"
+                  className="hover:opacity-70 transition-opacity hover:scale-110"
                 >
                   <X className="w-4 h-4" />
                 </button>
-              </span>
+              </motion.span>
             ))}
           </div>
           
@@ -112,29 +116,31 @@ export const QueryInput: React.FC = () => {
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
               placeholder="Enter keyword..."
               className={`
-                flex-1 px-4 py-3 rounded-xl border backdrop-blur-sm
-                focus:outline-none focus:ring-2 focus:ring-primary/50
+                flex-1 px-4 py-3 rounded-xl border backdrop-blur-md
+                focus:outline-none focus:ring-2 transition-all
                 ${isDarkMode
-                  ? 'bg-white/5 border-white/10 text-white placeholder-gray-400'
-                  : 'bg-white/80 border-gray-200 text-gray-900 placeholder-gray-500'
+                  ? 'bg-white/8 border-white/15 text-white placeholder-gray-400 focus:ring-primary/50 focus:border-primary/40'
+                  : 'bg-white/90 border-secondary/40 text-gray-900 placeholder-gray-500 focus:ring-primary/40 focus:border-primary/50'
                 }
               `}
             />
-            <button
+            <motion.button
               type="button"
               onClick={addKeyword}
               disabled={!currentKeyword.trim()}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={`
-                px-6 py-3 rounded-xl font-medium transition-all
+                px-6 py-3 rounded-xl font-semibold transition-all backdrop-blur-md border
                 ${isDarkMode
-                  ? 'bg-primary/20 text-accent hover:bg-primary/30'
-                  : 'bg-primary/10 text-primary-dark hover:bg-primary/20'
+                  ? 'bg-gradient-to-r from-primary/30 to-secondary/25 border-primary/30 text-secondary-light hover:from-primary/40 hover:to-secondary/35'
+                  : 'bg-gradient-to-r from-secondary/40 to-primary/20 border-secondary/40 text-primary-dark hover:from-secondary/50 hover:to-primary/30'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
             >
               <Plus className="w-5 h-5" />
-            </button>
+            </motion.button>
           </div>
         </div>
         
@@ -159,24 +165,25 @@ export const QueryInput: React.FC = () => {
         </div>
         
         {/* Submit button */}
-        <button
+        <motion.button
           type="submit"
           disabled={keywords.length === 0 || isLoading}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           className={`
             w-full px-8 py-4 rounded-xl font-bold text-lg
             flex items-center justify-center gap-3
-            transition-all duration-300 shadow-lg
+            transition-all duration-300 shadow-lg backdrop-blur-md
             ${isDarkMode
-              ? 'bg-gradient-to-r from-primary to-primary-light text-white hover:shadow-primary/50'
-              : 'bg-gradient-to-r from-primary-dark to-primary text-white hover:shadow-primary-dark/50'
+              ? 'bg-gradient-to-r from-primary via-secondary to-primary-light text-navy-deep hover:shadow-[0_0_30px_rgba(193,143,50,0.4)]'
+              : 'bg-gradient-to-r from-primary-dark via-primary to-secondary-dark text-white hover:shadow-[0_0_25px_rgba(193,143,50,0.3)]'
             }
-            disabled:opacity-50 disabled:cursor-not-allowed
-            hover:scale-105 active:scale-95
+            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
           `}
         >
           <Search className="w-6 h-6" />
           {isLoading ? 'Starting Pipeline...' : 'Start Literature Review'}
-        </button>
+        </motion.button>
       </form>
     </motion.div>
   );

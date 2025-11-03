@@ -31,13 +31,13 @@ const STAGE_ICONS = [
 ];
 
 const STAGE_COLORS = [
-  'from-primary/20 via-primary-light/15 to-primary/10',
-  'from-purple-500/20 via-purple-400/15 to-purple-600/10',
-  'from-pink-500/20 via-pink-400/15 to-pink-600/10',
-  'from-orange-500/20 via-orange-400/15 to-orange-600/10',
-  'from-success/20 via-green-400/15 to-success/10',
-  'from-cyan-500/20 via-cyan-400/15 to-cyan-600/10',
-  'from-primary/25 via-primary-light/20 to-primary-dark/15',
+  'from-primary/20 via-secondary/15 to-primary-light/10',
+  'from-purple-400/20 via-secondary-light/15 to-purple-500/10',
+  'from-pink-400/20 via-secondary/15 to-pink-500/10',
+  'from-orange-400/20 via-secondary-light/15 to-warning/10',
+  'from-success/20 via-secondary/15 to-success/10',
+  'from-info/20 via-secondary-light/15 to-info/10',
+  'from-primary/25 via-secondary-dark/20 to-primary-light/15',
 ];
 
 export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark }) => {
@@ -84,36 +84,46 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         ease: "easeOut"
       }}
       className={`
-        relative group
+        relative group glass-artistic
         h-full w-full min-h-[300px]
-        backdrop-blur-2xl rounded-3xl p-6 border
-        transition-all duration-300 cursor-pointer
+        rounded-3xl p-6 border
+        transition-all duration-500 cursor-pointer
         overflow-hidden
         ${isActive ? 'shadow-glass-lg' : 'shadow-glass'}
         ${isDark 
-          ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30' 
-          : 'bg-white/60 border-primary/20 hover:bg-white/80 hover:border-primary/40'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10 hover:from-white/12 hover:via-white/8 hover:to-white/5 hover:border-secondary/40' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30 hover:from-white/90 hover:via-white/80 hover:to-white/70 hover:border-primary/50'
         }
-        ${stage.status === 'running' ? 'ring-2 ring-primary/50 shadow-glow animate-pulse-glow' : ''}
-        ${stage.status === 'completed' ? 'ring-1 ring-success/30' : ''}
-        ${stage.status === 'error' ? 'ring-2 ring-danger/50' : ''}
+        ${stage.status === 'running' ? 'ring-2 ring-primary/60 shadow-glow animate-pulse-glow' : ''}
+        ${stage.status === 'completed' ? 'ring-1 ring-success/40 shadow-[0_0_15px_rgba(139,195,74,0.2)]' : ''}
+        ${stage.status === 'error' ? 'ring-2 ring-danger/60 shadow-[0_0_15px_rgba(255,112,67,0.3)]' : ''}
       `}
       whileHover={{ 
-        y: -4,
-        scale: 1.01,
-        transition: { duration: 0.2 }
+        y: -6,
+        scale: 1.02,
+        transition: { duration: 0.3, ease: "easeOut" }
       }}
     >
-      {/* Gradient overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      {/* Artistic gradient overlay */}
+      <div 
+        className={`absolute inset-0 bg-gradient-to-br ${gradientColor} opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-3xl`}
+        style={{ mixBlendMode: isDark ? 'screen' : 'multiply' }}
+      />
       
-      {/* Shimmer effect on active */}
+      {/* Enhanced shimmer effect on active with secondary gold */}
       {stage.status === 'running' && (
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-          animate={{ x: [-200, 400] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        />
+        <>
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/15 to-transparent"
+            animate={{ x: [-300, 600] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-l from-transparent via-secondary/10 to-transparent"
+            animate={{ x: [600, -300] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear', delay: 1 }}
+          />
+        </>
       )}
       
       {/* Content */}
@@ -122,16 +132,25 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         <div className="flex items-start justify-between mb-4">
           <div 
             className={`
-              p-3 rounded-2xl backdrop-blur-sm transition-all duration-300
-              ${isDark ? 'bg-primary/30 shadow-glow' : 'bg-primary/20'}
-              ${isActive ? 'opacity-100 scale-105' : 'opacity-60'}
+              p-3 rounded-2xl backdrop-blur-md transition-all duration-500
+              ${isDark 
+                ? 'bg-gradient-to-br from-primary/40 via-secondary/30 to-primary-light/35 shadow-[0_0_20px_rgba(193,143,50,0.3)]' 
+                : 'bg-gradient-to-br from-primary/30 via-secondary/40 to-primary-light/25 shadow-[0_0_15px_rgba(193,143,50,0.2)]'
+              }
+              ${isActive ? 'opacity-100 scale-105' : 'opacity-70 scale-100'}
               ${stage.status === 'running' ? 'animate-pulse-glow' : ''}
             `}
           >
-            <Icon className={`w-6 h-6 ${isDark ? 'text-primary-light' : 'text-primary'} transition-colors`} />
+            <Icon 
+              className={`w-6 h-6 transition-colors duration-300 ${
+                isDark ? 'text-secondary-light drop-shadow-[0_0_8px_rgba(244,231,195,0.5)]' : 'text-primary-dark'
+              }`} 
+            />
           </div>
           
-          <div className={`flex items-center gap-2 ${getStatusColor()}`}>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl backdrop-blur-sm ${
+            isDark ? 'bg-white/5' : 'bg-white/40'
+          } ${getStatusColor()}`}>
             {getStatusIcon()}
             <span className="text-sm font-semibold capitalize">
               {stage.status}
@@ -142,7 +161,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         {/* Stage info */}
         <div className="mt-auto">
           <h3 
-            className={`text-sm font-medium mb-2 ${
+            className={`text-sm font-medium mb-2 tracking-wide ${
               isDark ? 'text-gray-400' : 'text-gray-600'
             }`}
           >
@@ -151,39 +170,39 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           <p 
             className={`text-2xl font-bold mb-2 bg-gradient-to-r ${
               isDark 
-                ? 'from-white via-primary-light to-white' 
-                : 'from-gray-900 via-primary to-gray-900'
-            } bg-clip-text text-transparent`}
+                ? 'from-white via-secondary-light to-primary-light text-golden-glow' 
+                : 'from-gray-900 via-primary to-primary-dark'
+            } bg-clip-text text-transparent transition-all duration-500`}
           >
             {stage.name}
           </p>
           <p 
-            className={`text-sm ${
-              isDark ? 'text-gray-300' : 'text-gray-600'
+            className={`text-sm leading-relaxed ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
             }`}
           >
             {stage.message}
           </p>
         </div>
         
-        {/* Progress bar */}
+        {/* Enhanced progress bar with golden gradient */}
         {stage.status === 'running' && (
           <div className="mt-4">
-            <div className={`h-2 rounded-full overflow-hidden ${
-              isDark ? 'bg-white/10' : 'bg-gray-200'
+            <div className={`h-2.5 rounded-full overflow-hidden border ${
+              isDark ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-secondary/20'
             }`}>
               <motion.div
-                className="h-full bg-gradient-to-r from-primary to-primary-light"
+                className="h-full bg-gradient-to-r from-primary via-secondary to-primary-light shadow-[0_0_10px_rgba(193,143,50,0.5)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${stage.progress}%` }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
               />
             </div>
             <div className="flex justify-between items-center mt-2">
-              <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 Progress
               </span>
-              <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <span className={`text-xs font-bold ${isDark ? 'text-secondary-light' : 'text-primary-dark'}`}>
                 {stage.progress}%
               </span>
             </div>
@@ -201,18 +220,24 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         <StageDataPreview stage={stage} isDark={isDark} />
       </div>
       
-      {/* Decorative corner accent with golden glow */}
+      {/* Decorative corner accent with pastel gold glow */}
       <div 
         className={`
           absolute bottom-0 right-0 w-32 h-32 rounded-tl-full 
-          opacity-0 group-hover:opacity-100 transition-opacity duration-500
-          ${isDark ? 'bg-primary/10' : 'bg-primary/8'}
+          opacity-0 group-hover:opacity-100 transition-all duration-700
+          ${isDark 
+            ? 'bg-gradient-to-tl from-secondary/15 via-primary/10 to-transparent' 
+            : 'bg-gradient-to-tl from-secondary/20 via-primary/8 to-transparent'
+          }
         `}
       />
       
-      {/* Inner border glow on active */}
+      {/* Inner border glow on active with artistic enhancement */}
       {isActive && (
-        <div className="absolute inset-0 rounded-3xl border border-primary/20 pointer-events-none" />
+        <>
+          <div className="absolute inset-0 rounded-3xl border border-primary/20 pointer-events-none" />
+          <div className="absolute inset-0 rounded-3xl border border-secondary/10 pointer-events-none animate-pulse" />
+        </>
       )}
     </motion.div>
   );

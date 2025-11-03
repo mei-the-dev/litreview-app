@@ -8,8 +8,13 @@
   --color-primary-light: #D4A449;
   --color-primary-dark: #A67828;
   --color-primary-glow: rgba(193, 143, 50, 0.3);
+  --color-secondary: #F4E7C3;
+  --color-secondary-light: #FAF3DC;
+  --color-secondary-dark: #E8D9A8;
+  --color-secondary-glow: rgba(244, 231, 195, 0.4);
   --color-navy-deep: #1A1F3A;
   --color-navy-medium: #252B48;
+  --color-midnight: #0A0E1A;
 }
 
 /* Custom slider styles */
@@ -115,4 +120,22 @@
     rgba(255, 255, 255, 0) 100%
   );
   background-size: 200% 100%;
+}
+
+/* Radial gradient utility */
+.bg-radial-gradient {
+  background: radial-gradient(circle at center, var(--tw-gradient-stops));
+}
+
+/* Golden glow text effect */
+.text-golden-glow {
+  text-shadow: 0 0 20px rgba(193, 143, 50, 0.5),
+               0 0 40px rgba(193, 143, 50, 0.3),
+               0 0 60px rgba(193, 143, 50, 0.1);
+}
+
+/* Artistic backdrop filter for glassmorphism */
+.glass-artistic {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }

@@ -73,9 +73,9 @@ export const MethodologyDistribution: React.FC = () => {
             <Bar 
               dataKey="count" 
               radius={[0, 8, 8, 0]}
-              onClick={(data) => {
-                setSelectedMethodology(data.name);
-                setExpandedMethodology(data.name);
+              onClick={(data: any) => {
+                setSelectedMethodology(data.name || null);
+                setExpandedMethodology(data.name || null);
               }}
               style={{ cursor: 'pointer' }}
             >

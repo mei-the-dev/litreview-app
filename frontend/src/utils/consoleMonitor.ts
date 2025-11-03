@@ -50,7 +50,7 @@ export const setupConsoleMonitoring = () => {
   const originalError = console.error;
   const originalWarn = console.warn;
   const originalInfo = console.info;
-  const originalLog = console.log;
+  // const originalLog = console.log;
 
   // Intercept console.error
   console.error = (...args: any[]) => {

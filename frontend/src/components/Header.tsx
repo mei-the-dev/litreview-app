@@ -14,10 +14,10 @@ export const Header: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={`
-        backdrop-blur-xl rounded-3xl p-8 border shadow-2xl mb-8
+        glass-artistic rounded-3xl p-8 border shadow-2xl mb-8
         ${isDarkMode 
-          ? 'bg-white/5 border-white/10' 
-          : 'bg-white/50 border-primary/20'
+          ? 'bg-gradient-to-br from-white/8 via-white/5 to-white/3 border-white/10' 
+          : 'bg-gradient-to-br from-white/70 via-white/60 to-white/50 border-secondary/30'
         }
       `}
     >
@@ -26,13 +26,13 @@ export const Header: React.FC = () => {
           <h1 
             className={`text-5xl font-bold mb-2 bg-gradient-to-r ${
               isDarkMode
-                ? 'from-primary-light to-accent'
-                : 'from-primary-dark to-primary'
+                ? 'from-primary-light via-secondary-light to-primary text-golden-glow'
+                : 'from-primary-dark via-primary to-secondary-dark'
             } bg-clip-text text-transparent`}
           >
             LitReview
           </h1>
-          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Automated Academic Literature Review System
           </p>
         </div>
@@ -43,14 +43,16 @@ export const Header: React.FC = () => {
             <motion.a
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               href={`http://localhost:8000${pdfPath.replace('./output', '/output')}`}
               download
               className={`
-                p-4 rounded-2xl backdrop-blur-sm border transition-all
-                flex items-center gap-2 font-medium
+                p-4 rounded-2xl backdrop-blur-md border transition-all shadow-lg
+                flex items-center gap-2 font-semibold
                 ${isDarkMode
-                  ? 'bg-green-500/20 border-green-500/30 text-green-300 hover:bg-green-500/30'
-                  : 'bg-green-500/10 border-green-500/20 text-green-700 hover:bg-green-500/20'
+                  ? 'bg-gradient-to-r from-success/25 to-success/20 border-success/40 text-success hover:from-success/35 hover:to-success/30 shadow-[0_0_15px_rgba(139,195,74,0.3)]'
+                  : 'bg-gradient-to-r from-success/15 to-success/10 border-success/30 text-success hover:from-success/25 hover:to-success/20 shadow-[0_0_10px_rgba(139,195,74,0.2)]'
                 }
               `}
             >
@@ -61,33 +63,37 @@ export const Header: React.FC = () => {
           
           {/* Reset button */}
           {!isRunning && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: -90 }}
+              whileTap={{ scale: 0.9 }}
               onClick={reset}
               className={`
-                p-4 rounded-2xl backdrop-blur-sm border transition-all hover:scale-110 active:scale-95
+                p-4 rounded-2xl backdrop-blur-md border transition-all
                 ${isDarkMode
-                  ? 'bg-white/5 border-white/10 text-white hover:bg-white/10'
-                  : 'bg-white/80 border-gray-200 text-gray-700 hover:bg-white'
+                  ? 'bg-white/8 border-white/15 text-secondary-light hover:bg-white/12 hover:border-secondary/40'
+                  : 'bg-white/90 border-secondary/40 text-primary hover:bg-white hover:border-primary/50'
                 }
               `}
             >
               <RotateCcw className="w-6 h-6" />
-            </button>
+            </motion.button>
           )}
           
           {/* Theme toggle */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
             onClick={toggleDarkMode}
             className={`
-              p-4 rounded-2xl backdrop-blur-sm border transition-all hover:scale-110 active:scale-95
+              p-4 rounded-2xl backdrop-blur-md border transition-all
               ${isDarkMode
-                ? 'bg-white/5 border-white/10 text-white hover:bg-white/10'
-                : 'bg-white/80 border-gray-200 text-gray-700 hover:bg-white'
+                ? 'bg-gradient-to-br from-primary/30 to-secondary/25 border-primary/40 text-secondary-light hover:from-primary/40 hover:to-secondary/35'
+                : 'bg-gradient-to-br from-secondary/40 to-white/80 border-secondary/50 text-primary-dark hover:from-secondary/50 hover:to-white'
               }
             `}
           >
             {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-          </button>
+          </motion.button>
         </div>
       </div>
     </motion.div>
