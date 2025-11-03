@@ -26,19 +26,19 @@ function App() {
       className={`
         min-h-screen p-4 sm:p-8 relative overflow-hidden transition-all duration-700
         ${isDarkMode
-          ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
+          ? 'bg-gradient-to-br from-navy-deep via-navy-medium to-navy-deep'
           : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'
         }
       `}
     >
-      {/* Enhanced animated background mesh */}
+      {/* Enhanced animated background mesh with golden accent */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
           className={`
             absolute top-0 -left-40 w-[600px] h-[600px] rounded-full
             mix-blend-multiply filter blur-3xl opacity-70
             animate-blob
-            ${isDarkMode ? 'bg-purple-500' : 'bg-purple-300'}
+            ${isDarkMode ? 'bg-primary/40' : 'bg-primary/30'}
           `}
         />
         <div 
@@ -46,7 +46,7 @@ function App() {
             absolute top-0 -right-40 w-[600px] h-[600px] rounded-full
             mix-blend-multiply filter blur-3xl opacity-70
             animate-blob animation-delay-2000
-            ${isDarkMode ? 'bg-blue-500' : 'bg-blue-300'}
+            ${isDarkMode ? 'bg-purple-500/40' : 'bg-purple-300'}
           `}
         />
         <div 
@@ -54,7 +54,7 @@ function App() {
             absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full
             mix-blend-multiply filter blur-3xl opacity-70
             animate-blob animation-delay-4000
-            ${isDarkMode ? 'bg-pink-500' : 'bg-pink-300'}
+            ${isDarkMode ? 'bg-primary-light/30' : 'bg-pink-300'}
           `}
         />
       </div>

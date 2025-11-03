@@ -31,13 +31,13 @@ const STAGE_ICONS = [
 ];
 
 const STAGE_COLORS = [
-  'from-blue-500/20 to-blue-600/10',
-  'from-purple-500/20 to-purple-600/10',
-  'from-pink-500/20 to-pink-600/10',
-  'from-orange-500/20 to-orange-600/10',
-  'from-green-500/20 to-green-600/10',
-  'from-cyan-500/20 to-cyan-600/10',
-  'from-amber-500/20 to-amber-600/10',
+  'from-primary/20 via-primary-light/15 to-primary/10',
+  'from-purple-500/20 via-purple-400/15 to-purple-600/10',
+  'from-pink-500/20 via-pink-400/15 to-pink-600/10',
+  'from-orange-500/20 via-orange-400/15 to-orange-600/10',
+  'from-success/20 via-green-400/15 to-success/10',
+  'from-cyan-500/20 via-cyan-400/15 to-cyan-600/10',
+  'from-primary/25 via-primary-light/20 to-primary-dark/15',
 ];
 
 export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark }) => {
@@ -60,11 +60,11 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
   const getStatusColor = () => {
     switch (stage.status) {
       case 'running':
-        return 'text-blue-400';
+        return 'text-primary';
       case 'completed':
-        return 'text-green-400';
+        return 'text-success';
       case 'error':
-        return 'text-red-400';
+        return 'text-danger';
       default:
         return 'text-gray-400';
     }
@@ -85,31 +85,32 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
       }}
       className={`
         relative group
-        h-full w-full
-        backdrop-blur-xl rounded-3xl p-6 border
+        h-full w-full min-h-[300px]
+        backdrop-blur-2xl rounded-3xl p-6 border
         transition-all duration-300 cursor-pointer
         overflow-hidden
-        ${isActive ? 'shadow-2xl' : 'shadow-lg'}
+        ${isActive ? 'shadow-glass-lg' : 'shadow-glass'}
         ${isDark 
-          ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20' 
-          : 'bg-white/50 border-primary/20 hover:bg-white/70 hover:border-primary/30'
+          ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30' 
+          : 'bg-white/60 border-primary/20 hover:bg-white/80 hover:border-primary/40'
         }
-        ${stage.status === 'running' ? 'ring-2 ring-blue-400/50 animate-pulse' : ''}
-        ${stage.status === 'completed' ? 'ring-1 ring-green-400/30' : ''}
-        ${stage.status === 'error' ? 'ring-2 ring-red-400/50' : ''}
+        ${stage.status === 'running' ? 'ring-2 ring-primary/50 shadow-glow animate-pulse-glow' : ''}
+        ${stage.status === 'completed' ? 'ring-1 ring-success/30' : ''}
+        ${stage.status === 'error' ? 'ring-2 ring-danger/50' : ''}
       `}
       whileHover={{ 
         y: -4,
+        scale: 1.01,
         transition: { duration: 0.2 }
       }}
     >
       {/* Gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
       
-      {/* Shimmer effect */}
+      {/* Shimmer effect on active */}
       {stage.status === 'running' && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
           animate={{ x: [-200, 400] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         />
@@ -122,11 +123,12 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           <div 
             className={`
               p-3 rounded-2xl backdrop-blur-sm transition-all duration-300
-              ${isDark ? 'bg-primary/30' : 'bg-primary/20'}
-              ${isActive ? 'opacity-100' : 'opacity-60'}
+              ${isDark ? 'bg-primary/30 shadow-glow' : 'bg-primary/20'}
+              ${isActive ? 'opacity-100 scale-105' : 'opacity-60'}
+              ${stage.status === 'running' ? 'animate-pulse-glow' : ''}
             `}
           >
-            <Icon className={`w-6 h-6 ${isDark ? 'text-accent' : 'text-primary-dark'}`} />
+            <Icon className={`w-6 h-6 ${isDark ? 'text-primary-light' : 'text-primary'} transition-colors`} />
           </div>
           
           <div className={`flex items-center gap-2 ${getStatusColor()}`}>
@@ -147,9 +149,11 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
             Stage {stage.id}
           </h3>
           <p 
-            className={`text-2xl font-bold mb-2 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
+            className={`text-2xl font-bold mb-2 bg-gradient-to-r ${
+              isDark 
+                ? 'from-white via-primary-light to-white' 
+                : 'from-gray-900 via-primary to-gray-900'
+            } bg-clip-text text-transparent`}
           >
             {stage.name}
           </p>
@@ -197,14 +201,19 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         <StageDataPreview stage={stage} isDark={isDark} />
       </div>
       
-      {/* Decorative corner accent */}
+      {/* Decorative corner accent with golden glow */}
       <div 
         className={`
           absolute bottom-0 right-0 w-32 h-32 rounded-tl-full 
           opacity-0 group-hover:opacity-100 transition-opacity duration-500
-          ${isDark ? 'bg-accent/5' : 'bg-primary/5'}
+          ${isDark ? 'bg-primary/10' : 'bg-primary/8'}
         `}
       />
+      
+      {/* Inner border glow on active */}
+      {isActive && (
+        <div className="absolute inset-0 rounded-3xl border border-primary/20 pointer-events-none" />
+      )}
     </motion.div>
   );
 };

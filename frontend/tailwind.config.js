@@ -7,14 +7,48 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#CC8844',
-        'primary-light': '#E6A966',
-        'primary-dark': '#AA6622',
+        // Primary golden accent
+        primary: '#C18F32',
+        'primary-light': '#D4A449',
+        'primary-dark': '#A67828',
+        'primary-glow': 'rgba(193, 143, 50, 0.3)',
+        
+        // Supporting colors
         accent: '#F5EDD6',
         'accent-muted': '#FAF3E0',
+        
+        // Dark theme colors
+        'navy-deep': '#1A1F3A',
+        'navy-medium': '#252B48',
+        'gray-warm': '#4A4A4A',
+        'gray-dark': '#2C2C2C',
+        
+        // Status colors
+        success: '#52C41A',
+        warning: '#FFA940',
+        danger: '#FF4D4F',
       },
       backdropBlur: {
         xs: '2px',
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(193, 143, 50, 0.3)',
+        'glow-lg': '0 0 30px rgba(193, 143, 50, 0.4)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+        'glass-lg': '0 8px 32px 0 rgba(31, 38, 135, 0.25)',
+      },
+      animation: {
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        'pulse-glow': {
+          '0%, 100%': { 
+            boxShadow: '0 0 20px rgba(193, 143, 50, 0.3)',
+          },
+          '50%': { 
+            boxShadow: '0 0 30px rgba(193, 143, 50, 0.5)',
+          },
+        },
       },
     },
   },

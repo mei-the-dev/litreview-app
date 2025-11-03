@@ -2,25 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties for Theme */
+:root {
+  --color-primary: #C18F32;
+  --color-primary-light: #D4A449;
+  --color-primary-dark: #A67828;
+  --color-primary-glow: rgba(193, 143, 50, 0.3);
+  --color-navy-deep: #1A1F3A;
+  --color-navy-medium: #252B48;
+}
+
 /* Custom slider styles */
 .slider::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #CC8844, #E6A966);
+  background: linear-gradient(135deg, #C18F32, #D4A449);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(204, 136, 68, 0.5);
+  box-shadow: 0 0 10px rgba(193, 143, 50, 0.5);
+  transition: all 0.3s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 15px rgba(193, 143, 50, 0.7);
+  transform: scale(1.1);
 }
 
 .slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #CC8844, #E6A966);
+  background: linear-gradient(135deg, #C18F32, #D4A449);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(204, 136, 68, 0.5);
+  box-shadow: 0 0 10px rgba(193, 143, 50, 0.5);
   border: none;
+  transition: all 0.3s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  box-shadow: 0 0 15px rgba(193, 143, 50, 0.7);
+  transform: scale(1.1);
 }
 
 /* Smooth animations */
@@ -28,22 +50,25 @@
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with golden accent */
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(204, 136, 68, 0.5);
-  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(193, 143, 50, 0.5), rgba(212, 164, 73, 0.5));
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(204, 136, 68, 0.7);
+  background: linear-gradient(135deg, rgba(193, 143, 50, 0.7), rgba(212, 164, 73, 0.7));
 }
 
 /* Animated blob background */

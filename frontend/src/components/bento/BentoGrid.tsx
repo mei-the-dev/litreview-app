@@ -19,9 +19,9 @@ export const BentoGrid: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="w-full"
     >
-      {/* Responsive Bento Grid - No Overlapping */}
+      {/* Responsive Bento Grid - No Overlapping, Perfect Layout */}
       <div className="
-        grid gap-4 sm:gap-6
+        grid gap-4 sm:gap-5 lg:gap-6
         grid-cols-1
         sm:grid-cols-2
         lg:grid-cols-3
@@ -44,11 +44,8 @@ export const BentoGrid: React.FC = () => {
                 ? 'sm:col-span-2 lg:col-span-2 xl:col-span-2'
                 : 'col-span-1'
               }
-              ${stage.id === 1 || stage.id === 7
-                ? 'row-span-1'
-                : 'row-span-1'
-              }
-              min-h-[280px]
+              min-h-[300px]
+              h-fit
               w-full
             `}
           >

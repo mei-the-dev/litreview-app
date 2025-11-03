@@ -1,0 +1,429 @@
+{
+  "marko": {
+    "version": "2.0",
+    "project": "LitReview UX Final Polish",
+    "description": "Comprehensive UX polish focusing on: (1) Dashboard pipeline event updates, (2) Bento grid overlapping fixes, (3) State-of-the-art glassmorphism design, (4) Accent color theming (#C18F32), (5) Better pipeline stage data visualization, especially Stage 6 detailed updates",
+    "context": {
+      "current_state": {
+        "architecture": "React + TypeScript frontend, FastAPI Python backend, WebSocket real-time updates",
+        "issue_1": "Dashboard pipeline events and stages not updating in real-time",
+        "issue_2": "Bento cards overlapping on certain screen sizes",
+        "issue_3": "Color scheme needs refinement around accent #C18F32",
+        "issue_4": "Stage 6 (synthesis) needs granular progress updates - it's CPU/GPU intensive",
+        "issue_5": "Need better data state visualization in each pipeline step",
+        "current_branch": "feature/polishing"
+      },
+      "success_criteria": {
+        "dashboard_updates": "Real-time pipeline events showing in dashboard with detailed logging",
+        "no_overlap": "Bento cards never overlap, proper responsive grid",
+        "beautiful_ui": "State-of-the-art glassmorphism with cohesive color scheme",
+        "accent_color": "Golden accent #C18F32 integrated beautifully throughout",
+        "stage_6_detail": "Stage 6 shows sub-task progress (theme analysis, methodology grouping, synthesis writing)",
+        "data_visualization": "Each stage card shows meaningful preview of data state",
+        "persistence": "Stage results persist and are reviewable after completion"
+      }
+    },
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Dashboard Real-Time Updates Fix",
+        "goal": "Fix dashboard to show pipeline events and stages updating in real-time",
+        "rationale": "Dashboard monitoring is critical for debugging and understanding pipeline state",
+        "tasks": [
+          {
+            "task": "1.1",
+            "description": "Audit backend event emission",
+            "steps": [
+              "Review all pipeline stages for proper event emission",
+              "Verify stage_6_synthesis.py emits granular events",
+              "Check WebSocket event routing in FastAPI",
+              "Verify event format matches dashboard expectations"
+            ],
+            "files_affected": [
+              "backend/domain/pipeline/stage_*.py",
+              "backend/api/websocket.py",
+              "backend/core/events.py"
+            ]
+          },
+          {
+            "task": "1.2",
+            "description": "Enhance dashboard event capture",
+            "steps": [
+              "Review dashboard.py event log parsing",
+              "Add pipeline_events.log watcher if missing",
+              "Enhance event display table with stage breakdown",
+              "Add event filtering by stage/severity"
+            ],
+            "files_affected": [
+              "dashboard.py"
+            ]
+          },
+          {
+            "task": "1.3",
+            "description": "Add Stage 6 detailed logging",
+            "steps": [
+              "Break Stage 6 into sub-tasks: theme_analysis, methodology_grouping, synthesis_writing",
+              "Emit progress events for each sub-task (0-100%)",
+              "Log LLM calls with token counts",
+              "Log GPU usage during processing"
+            ],
+            "files_affected": [
+              "backend/domain/pipeline/stage_6_synthesis.py"
+            ]
+          }
+        ],
+        "validation": [
+          "Run pipeline and verify dashboard shows events in real-time",
+          "Verify Stage 6 shows sub-task progress",
+          "Check GPU metrics update during Stage 6"
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "Bento Grid Layout Perfection",
+        "goal": "Eliminate all card overlapping and perfect responsive layout",
+        "rationale": "Overlapping destroys UX and makes content unreadable",
+        "tasks": [
+          {
+            "task": "2.1",
+            "description": "Fix grid layout system",
+            "steps": [
+              "Review BentoGrid.tsx grid configuration",
+              "Implement proper auto-rows with minmax",
+              "Add explicit min-height constraints",
+              "Test on mobile (320px), tablet (768px), desktop (1024px+)",
+              "Ensure cards never overlap using CSS grid gap"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/BentoGrid.tsx",
+              "frontend/src/index.css"
+            ]
+          },
+          {
+            "task": "2.2",
+            "description": "Responsive card sizing",
+            "steps": [
+              "Stage 1 & 7: 2-col span on all sizes",
+              "Other stages: 1-col on mobile, adaptive on larger",
+              "Dynamic height based on content",
+              "Add overflow handling for long content"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/StageBentoCard.tsx"
+            ]
+          }
+        ],
+        "validation": [
+          "Test on Chrome DevTools: mobile, tablet, desktop",
+          "Verify no overlaps at any viewport size",
+          "Check scroll behavior is smooth"
+        ]
+      },
+      {
+        "phase": 3,
+        "name": "Color Scheme & Theming Excellence",
+        "goal": "Implement beautiful color scheme centered on accent #C18F32 with state-of-the-art aesthetics",
+        "rationale": "Color significantly impacts user experience and brand perception",
+        "tasks": [
+          {
+            "task": "3.1",
+            "description": "Define comprehensive color palette",
+            "steps": [
+              "Primary accent: #C18F32 (warm gold)",
+              "Complementary: Deep navy #1A1F3A for contrast",
+              "Supporting: Warm grays #4A4A4A, #2C2C2C",
+              "Success: #52C41A, Warning: #FFA940, Error: #FF4D4F",
+              "Glassmorphism: rgba(255,255,255,0.05-0.15) for cards",
+              "Create CSS custom properties for all colors"
+            ],
+            "files_affected": [
+              "frontend/src/index.css",
+              "frontend/tailwind.config.js"
+            ]
+          },
+          {
+            "task": "3.2",
+            "description": "Apply accent color strategically",
+            "steps": [
+              "Headers and titles: Gold gradient",
+              "Active states: Gold glow effect",
+              "Progress bars: Gold fill",
+              "Hover effects: Gold tint",
+              "Icons: Gold on active, neutral otherwise",
+              "Ensure WCAG AA contrast ratios"
+            ],
+            "files_affected": [
+              "frontend/src/components/Header.tsx",
+              "frontend/src/components/bento/StageBentoCard.tsx",
+              "frontend/src/components/QueryInput.tsx",
+              "frontend/src/index.css"
+            ]
+          },
+          {
+            "task": "3.3",
+            "description": "Enhance glassmorphism effects",
+            "steps": [
+              "Card backgrounds: blur(20px) with subtle gradient",
+              "Border: 1px solid rgba(255,255,255,0.1)",
+              "Shadow: Multiple layers for depth",
+              "Hover: Increase backdrop-blur and brightness",
+              "Add subtle inner glow on active cards"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/StageBentoCard.tsx",
+              "frontend/src/index.css"
+            ]
+          }
+        ],
+        "validation": [
+          "Visual inspection: Does it look premium?",
+          "Check contrast ratios with browser tools",
+          "Test dark/light mode transitions",
+          "Verify gold accent is prominent but not overwhelming"
+        ]
+      },
+      {
+        "phase": 4,
+        "name": "Pipeline Stage Data Visualization",
+        "goal": "Show meaningful data previews in each stage card for better interpretability",
+        "rationale": "Users need to see what's happening at each stage, not just status",
+        "tasks": [
+          {
+            "task": "4.1",
+            "description": "Design stage data preview components",
+            "steps": [
+              "Stage 1: Show paper count, top keywords",
+              "Stage 2: Show relevance score distribution (mini chart)",
+              "Stage 3: Show theme count, top themes",
+              "Stage 4: Show methodology breakdown (pie chart visual)",
+              "Stage 5: Show top 5 ranked papers",
+              "Stage 6: Show synthesis progress (sub-tasks with %)",
+              "Stage 7: Show PDF status, page count"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/previews/StageDataPreview.tsx",
+              "frontend/src/components/bento/previews/Stage*Preview.tsx (create each)"
+            ]
+          },
+          {
+            "task": "4.2",
+            "description": "Integrate mini visualizations",
+            "steps": [
+              "Use lightweight chart library (recharts mini)",
+              "Create sparkline component for trends",
+              "Add pill badges for counts/categories",
+              "Implement collapsible details in cards"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/StageBentoCard.tsx",
+              "frontend/src/components/visualizations/* (create)"
+            ]
+          },
+          {
+            "task": "4.3",
+            "description": "Stage 6 detailed breakdown UI",
+            "steps": [
+              "Show 3 sub-tasks: Theme Analysis, Methodology Grouping, Synthesis Writing",
+              "Each sub-task has progress bar",
+              "Show LLM call count and token usage",
+              "Display estimated time remaining",
+              "Add expandable log of events"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/previews/Stage6Preview.tsx"
+            ]
+          }
+        ],
+        "validation": [
+          "Run full pipeline and verify each stage shows data",
+          "Stage 6 shows sub-task progress",
+          "Data persists after stage completion"
+        ]
+      },
+      {
+        "phase": 5,
+        "name": "Persistent Results & Navigation",
+        "goal": "Ensure pipeline results persist and are accessible after completion",
+        "rationale": "Users should be able to review all stages after pipeline finishes",
+        "tasks": [
+          {
+            "task": "5.1",
+            "description": "Implement results persistence",
+            "steps": [
+              "Store all stage results in pipelineStore",
+              "Add 'View Details' button to completed stages",
+              "Keep bento grid visible even after completion",
+              "Add toggle between pipeline view and full results"
+            ],
+            "files_affected": [
+              "frontend/src/stores/pipelineStore.ts",
+              "frontend/src/components/bento/StageBentoCard.tsx"
+            ]
+          },
+          {
+            "task": "5.2",
+            "description": "Enhanced navigation",
+            "steps": [
+              "Add tabs: Pipeline Progress | Full Results",
+              "In pipeline view: show bento grid with live updates",
+              "In results view: show detailed breakdown of all stages",
+              "Add 'Back to Pipeline' from results",
+              "Breadcrumb navigation"
+            ],
+            "files_affected": [
+              "frontend/src/App.tsx",
+              "frontend/src/components/results/ResultsView.tsx"
+            ]
+          }
+        ],
+        "validation": [
+          "Complete a pipeline, verify all stage data persists",
+          "Navigate between views without data loss",
+          "Test browser refresh preserves state (localStorage)"
+        ]
+      },
+      {
+        "phase": 6,
+        "name": "Testing & Quality Assurance",
+        "goal": "Comprehensive testing of all UX improvements",
+        "rationale": "Changes must not break existing functionality",
+        "tasks": [
+          {
+            "task": "6.1",
+            "description": "Unit tests for new components",
+            "steps": [
+              "Test stage preview components render correctly",
+              "Test color theme utilities",
+              "Test data persistence functions"
+            ],
+            "files_affected": [
+              "frontend/src/components/bento/__tests__/*",
+              "backend/tests/test_stage_events.py"
+            ]
+          },
+          {
+            "task": "6.2",
+            "description": "E2E visual testing",
+            "steps": [
+              "Test bento grid at multiple viewport sizes",
+              "Test pipeline execution with dashboard monitoring",
+              "Test navigation flow: pipeline -> results -> back",
+              "Test Stage 6 detailed progress updates"
+            ],
+            "files_affected": [
+              "test_ux_polish_e2e.py"
+            ]
+          },
+          {
+            "task": "6.3",
+            "description": "Dashboard validation",
+            "steps": [
+              "Run dashboard.py alongside pipeline",
+              "Verify events appear in real-time",
+              "Check GPU metrics update",
+              "Verify no missing events"
+            ],
+            "files_affected": [
+              "test_dashboard_events.sh"
+            ]
+          }
+        ],
+        "validation": [
+          "All tests pass",
+          "No console errors in frontend",
+          "Dashboard shows complete event stream",
+          "Visual QA: UI looks premium"
+        ]
+      }
+    ],
+    "execution_strategy": {
+      "approach": "Sequential phase execution with testing checkpoints",
+      "iterations": [
+        {
+          "iteration": 1,
+          "phases": [1, 2],
+          "description": "Fix critical dashboard and layout issues",
+          "checkpoint": "Dashboard updates in real-time, no card overlaps"
+        },
+        {
+          "iteration": 2,
+          "phases": [3],
+          "description": "Apply beautiful theming",
+          "checkpoint": "UI looks premium with gold accent theme"
+        },
+        {
+          "iteration": 3,
+          "phases": [4, 5],
+          "description": "Add data visualization and persistence",
+          "checkpoint": "Each stage shows meaningful data, results persist"
+        },
+        {
+          "iteration": 4,
+          "phases": [6],
+          "description": "Comprehensive testing",
+          "checkpoint": "All tests pass, production ready"
+        }
+      ]
+    },
+    "file_structure": {
+      "backend": {
+        "domain/pipeline/": "Enhanced event emission for all stages",
+        "api/websocket.py": "Event routing verification",
+        "core/events.py": "Event types and formatting"
+      },
+      "frontend": {
+        "src/components/bento/": "Grid layout and card components",
+        "src/components/bento/previews/": "Stage data preview components",
+        "src/components/visualizations/": "Mini charts and sparklines",
+        "src/index.css": "Color scheme and theme definitions",
+        "tailwind.config.js": "Extend with custom colors"
+      },
+      "tests": {
+        "test_ux_polish_e2e.py": "End-to-end UX testing",
+        "frontend/src/components/__tests__/": "Component unit tests"
+      },
+      "dashboard.py": "Enhanced event monitoring"
+    },
+    "dependencies": {
+      "frontend": {
+        "add": [
+          "recharts (for mini visualizations)"
+        ],
+        "existing": [
+          "framer-motion (animations)",
+          "lucide-react (icons)",
+          "zustand (state)",
+          "tailwindcss (styling)"
+        ]
+      },
+      "backend": {
+        "existing": [
+          "fastapi (WebSocket)",
+          "rich (dashboard)"
+        ]
+      }
+    },
+    "risk_mitigation": {
+      "risk_1": {
+        "risk": "Breaking existing WebSocket connections",
+        "mitigation": "Test WebSocket thoroughly, keep backwards compatibility"
+      },
+      "risk_2": {
+        "risk": "Performance impact from detailed logging",
+        "mitigation": "Use efficient logging, batch events where possible"
+      },
+      "risk_3": {
+        "risk": "CSS changes breaking responsive design",
+        "mitigation": "Test at all breakpoints, use CSS grid properly"
+      }
+    },
+    "success_metrics": {
+      "dashboard": "Shows 100% of pipeline events in real-time",
+      "layout": "Zero card overlaps at any viewport size",
+      "aesthetics": "Achieves 'state-of-the-art' glassmorphism look",
+      "data_viz": "Each stage shows meaningful data preview",
+      "stage_6": "Shows granular progress with sub-tasks",
+      "testing": "All E2E tests pass, no console errors"
+    }
+  }
+}
