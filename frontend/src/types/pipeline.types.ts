@@ -44,6 +44,7 @@ export interface PipelineStage {
   progress: number;
   message: string;
   result?: any;
+  data?: any;  // Added for real-time sub-task data
   startTime?: number;
   endTime?: number;
 }

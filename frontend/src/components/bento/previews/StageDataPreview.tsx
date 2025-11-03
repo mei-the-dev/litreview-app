@@ -150,7 +150,6 @@ export const StageDataPreview: React.FC<StageDataPreviewProps> = ({ stage, isDar
     ];
     
     const currentSubTaskObj = subTasks.find(st => st.id === subTask);
-    const currentProgress = stage.progress || 0;
     
     return (
       <div className={`mt-4 p-4 rounded-xl ${displayBg} border ${isComplete ? 'border-success/20' : 'border-primary/20'}`}>
