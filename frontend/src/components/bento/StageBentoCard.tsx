@@ -285,7 +285,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         )}
         
         {/* Stage 6 specific: Progress Checklist */}
-        {stage.id === 6 && isExpanded && stage.updateHistory && (
+        {stage.id === 6 && isExpanded && stage.updateHistory && stage.updateHistory.length > 0 && (
           <StageProgressChecklist
             updateHistory={stage.updateHistory}
             currentProgress={stage.progress}
@@ -294,7 +294,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         )}
         
         {/* General timeline for all stages */}
-        {stage.id !== 6 && stage.updateHistory && (
+        {stage.id !== 6 && stage.updateHistory && stage.updateHistory.length > 0 && isExpanded && (
           <StageUpdateTimeline
             updateHistory={stage.updateHistory}
             isDark={isDark}
@@ -303,7 +303,9 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
         )}
         
         {/* Enhanced Result preview with StageDataPreview component */}
-        <StageDataPreview stage={stage} isDark={isDark} />
+        {(stage.result || stage.status === 'running') && (
+          <StageDataPreview stage={stage} isDark={isDark} />
+        )}
       </div>
       
       {/* Decorative corner accent with pastel gold glow */}

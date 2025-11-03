@@ -1,0 +1,252 @@
+{
+  "marko_version": "1.0",
+  "project_name": "LitReview Stage Cards Rendering Fix",
+  "created_at": "2025-11-03T00:52:00Z",
+  "context": {
+    "problem": "Rendering error in stage cards - tests passing but actual rendering failing",
+    "current_branch": "feature/polishing",
+    "key_files": [
+      "frontend/src/components/bento/StageBentoCard.tsx",
+      "frontend/src/components/bento/BentoGrid.tsx",
+      "frontend/src/components/bento/StageProgressChecklist.tsx",
+      "frontend/src/components/bento/StageUpdateTimeline.tsx",
+      "frontend/src/components/bento/StageDataPreview.tsx"
+    ],
+    "suspected_causes": [
+      "Conditional rendering logic errors",
+      "Null/undefined data access",
+      "React keys issues",
+      "Animation conflicts",
+      "CSS className concatenation errors",
+      "Component re-render loops"
+    ]
+  },
+  "plan": {
+    "phase_1_diagnosis": {
+      "name": "Identify Rendering Error",
+      "tasks": [
+        {
+          "id": "1.1",
+          "description": "Check browser console for React error messages",
+          "actions": [
+            "Open browser dev tools",
+            "Check Console tab for errors",
+            "Check React DevTools for component tree issues"
+          ]
+        },
+        {
+          "id": "1.2",
+          "description": "Review component rendering logic",
+          "actions": [
+            "Check all conditional renders for null/undefined",
+            "Verify all array mappings have proper keys",
+            "Check for missing null checks on optional props"
+          ]
+        },
+        {
+          "id": "1.3",
+          "description": "Test component isolation",
+          "actions": [
+            "Create isolated test page for each component",
+            "Test with mock data",
+            "Identify which component fails"
+          ]
+        }
+      ]
+    },
+    "phase_2_common_fixes": {
+      "name": "Apply Common React Error Fixes",
+      "tasks": [
+        {
+          "id": "2.1",
+          "description": "Add null safety checks",
+          "patterns": [
+            "Replace 'stage.updateHistory.map' with 'stage.updateHistory?.map'",
+            "Replace 'data.sub_task' with 'data?.sub_task'",
+            "Add default values: 'updateHistory || []'",
+            "Add guards: 'if (!stage) return null'"
+          ]
+        },
+        {
+          "id": "2.2",
+          "description": "Fix array key issues",
+          "patterns": [
+            "Ensure all .map() have unique keys",
+            "Use stage.id + index for compound keys if needed",
+            "Never use array index alone as key"
+          ]
+        },
+        {
+          "id": "2.3",
+          "description": "Fix className issues",
+          "patterns": [
+            "Check for undefined in template literals",
+            "Ensure all conditional classes have fallback",
+            "Replace ${undefined} with proper defaults"
+          ]
+        }
+      ]
+    },
+    "phase_3_stage_specific": {
+      "name": "Fix Stage-Specific Issues",
+      "tasks": [
+        {
+          "id": "3.1",
+          "description": "Fix StageBentoCard",
+          "checks": [
+            "Verify Icon component exists for all stage IDs",
+            "Check gradientColor array bounds",
+            "Verify updateHistory handling",
+            "Check localStorage serialization"
+          ]
+        },
+        {
+          "id": "3.2",
+          "description": "Fix StageProgressChecklist",
+          "checks": [
+            "Verify updateHistory array access",
+            "Check subtask data extraction logic",
+            "Verify subtaskData optional chaining",
+            "Check STAGE_6_SUBTASKS array access"
+          ]
+        },
+        {
+          "id": "3.3",
+          "description": "Fix StageUpdateTimeline",
+          "checks": [
+            "Review timeline rendering logic",
+            "Check date formatting",
+            "Verify expansion logic"
+          ]
+        },
+        {
+          "id": "3.4",
+          "description": "Fix StageDataPreview",
+          "checks": [
+            "Review data access patterns",
+            "Check conditional rendering",
+            "Verify result data structure"
+          ]
+        }
+      ]
+    },
+    "phase_4_testing": {
+      "name": "Create Effective Tests",
+      "tasks": [
+        {
+          "id": "4.1",
+          "description": "Unit tests for each component",
+          "test_cases": [
+            "Component renders with minimal props",
+            "Component handles null/undefined data",
+            "Component handles empty arrays",
+            "Component handles missing optional fields",
+            "Component renders with complete data"
+          ]
+        },
+        {
+          "id": "4.2",
+          "description": "Integration tests",
+          "test_cases": [
+            "BentoGrid renders all stages",
+            "Stage card expands/collapses correctly",
+            "Update timeline displays correctly",
+            "Progress checklist tracks progress"
+          ]
+        },
+        {
+          "id": "4.3",
+          "description": "E2E rendering tests",
+          "test_cases": [
+            "Start pipeline and verify stages render",
+            "Verify stage updates render correctly",
+            "Verify stage 6 expansion works",
+            "Verify completion states render"
+          ]
+        }
+      ]
+    },
+    "phase_5_validation": {
+      "name": "Validate Fixes",
+      "tasks": [
+        {
+          "id": "5.1",
+          "description": "Manual testing",
+          "steps": [
+            "Start full pipeline",
+            "Observe all stages rendering",
+            "Check stage 6 detailed updates",
+            "Verify no console errors"
+          ]
+        },
+        {
+          "id": "5.2",
+          "description": "Browser testing",
+          "steps": [
+            "Test in Chrome/Chromium",
+            "Test in Firefox",
+            "Test responsive layouts",
+            "Test dark/light mode"
+          ]
+        },
+        {
+          "id": "5.3",
+          "description": "Performance check",
+          "steps": [
+            "Check React DevTools Profiler",
+            "Verify no excessive re-renders",
+            "Check animation performance",
+            "Verify no memory leaks"
+          ]
+        }
+      ]
+    }
+  },
+  "implementation_priority": [
+    {
+      "priority": 1,
+      "task": "Add null safety to all optional data access",
+      "rationale": "Most common cause of rendering errors"
+    },
+    {
+      "priority": 2,
+      "task": "Fix array keys in all .map() calls",
+      "rationale": "Can cause subtle rendering bugs"
+    },
+    {
+      "priority": 3,
+      "task": "Add error boundaries around components",
+      "rationale": "Prevent full app crash from component errors"
+    },
+    {
+      "priority": 4,
+      "task": "Add defensive checks in StageProgressChecklist",
+      "rationale": "Most complex component with most data dependencies"
+    },
+    {
+      "priority": 5,
+      "task": "Create isolated component tests",
+      "rationale": "Verify fixes work in isolation"
+    }
+  ],
+  "debugging_checklist": [
+    "Browser console clear of errors",
+    "React DevTools shows complete component tree",
+    "No 'undefined' in rendered HTML",
+    "No infinite render loops",
+    "All stage cards visible",
+    "Stage 6 expansion works",
+    "Update timeline renders",
+    "Progress checklist shows steps",
+    "Animations run smoothly",
+    "Dark/light mode both work"
+  ],
+  "success_criteria": [
+    "Zero console errors during pipeline execution",
+    "All 7 stage cards render correctly",
+    "Stage 6 expansion shows detailed progress",
+    "Update history displays for all stages",
+    "Tests actually catch rendering errors",
+    "E2E test passes with real backend"
+  ]
+}
