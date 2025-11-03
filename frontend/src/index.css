@@ -2,19 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties for Theme */
+/* CSS Custom Properties for Theme - Sunset Inspired */
 :root {
   --color-primary: #C18F32;
   --color-primary-light: #D4A449;
   --color-primary-dark: #A67828;
   --color-primary-glow: rgba(193, 143, 50, 0.3);
   --color-secondary: #F4E7C3;
-  --color-secondary-light: #FAF3DC;
+  --color-secondary-light: #FEF6E4;
   --color-secondary-dark: #E8D9A8;
   --color-secondary-glow: rgba(244, 231, 195, 0.4);
   --color-navy-deep: #1A1F3A;
   --color-navy-medium: #252B48;
   --color-midnight: #0A0E1A;
+  
+  /* Sunset palette */
+  --sunset-amber: #FF9D5C;
+  --sunset-gold: #FFB84D;
+  --sunset-peach: #FFCF9F;
+  --sunset-coral: #FF8A5B;
+  --sunset-rose: #F4A5B9;
+  --sunset-violet: #A17FB5;
+  --twilight-indigo: #6B5B95;
+  --twilight-navy: #3D3066;
+  --horizon-cream: #FFEFD5;
 }
 
 /* Custom slider styles */
@@ -138,4 +149,56 @@
 .glass-artistic {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Sunset gradient animations */
+@keyframes sunset-shimmer {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+@keyframes horizon-glow {
+  0%, 100% {
+    box-shadow: 0 0 40px rgba(255, 157, 92, 0.3),
+                0 0 80px rgba(255, 184, 77, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(255, 157, 92, 0.5),
+                0 0 120px rgba(255, 184, 77, 0.3);
+  }
+}
+
+.animate-sunset-shimmer {
+  animation: sunset-shimmer 8s ease-in-out infinite;
+}
+
+.animate-horizon-glow {
+  animation: horizon-glow 6s ease-in-out infinite;
+}
+
+/* Layered gradient for depth */
+.sunset-gradient-bg {
+  background: 
+    linear-gradient(180deg, 
+      rgba(255, 207, 159, 0.1) 0%,
+      rgba(255, 157, 92, 0.15) 20%,
+      rgba(255, 184, 77, 0.2) 40%,
+      rgba(193, 143, 50, 0.15) 60%,
+      rgba(107, 91, 149, 0.1) 80%,
+      rgba(61, 48, 102, 0.05) 100%
+    );
+}
+
+/* Warm glow effect */
+.warm-glow {
+  box-shadow: 
+    0 0 20px rgba(255, 157, 92, 0.2),
+    0 0 40px rgba(255, 184, 77, 0.15),
+    inset 0 0 30px rgba(255, 207, 159, 0.1);
 }

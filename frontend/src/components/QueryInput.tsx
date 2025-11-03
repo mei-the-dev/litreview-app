@@ -90,8 +90,8 @@ export const QueryInput: React.FC = () => {
                   inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold
                   backdrop-blur-md border transition-all
                   ${isDarkMode 
-                    ? 'bg-gradient-to-r from-primary/30 to-secondary/25 border-primary/30 text-secondary-light shadow-[0_0_10px_rgba(193,143,50,0.2)]' 
-                    : 'bg-gradient-to-r from-secondary/50 to-primary/20 border-secondary/40 text-primary-dark shadow-[0_0_5px_rgba(193,143,50,0.15)]'
+                    ? 'bg-gradient-to-r from-sunset-amber/35 to-sunset-gold/30 border-sunset-gold/40 text-horizon-cream shadow-[0_0_15px_rgba(255,157,92,0.25)]' 
+                    : 'bg-gradient-to-r from-sunset-peach/60 to-sunset-gold/30 border-sunset-coral/40 text-twilight-navy shadow-[0_0_10px_rgba(255,138,91,0.2)]'
                   }
                 `}
               >
@@ -133,8 +133,8 @@ export const QueryInput: React.FC = () => {
               className={`
                 px-6 py-3 rounded-xl font-semibold transition-all backdrop-blur-md border
                 ${isDarkMode
-                  ? 'bg-gradient-to-r from-primary/30 to-secondary/25 border-primary/30 text-secondary-light hover:from-primary/40 hover:to-secondary/35'
-                  : 'bg-gradient-to-r from-secondary/40 to-primary/20 border-secondary/40 text-primary-dark hover:from-secondary/50 hover:to-primary/30'
+                  ? 'bg-gradient-to-r from-sunset-amber/35 to-sunset-gold/30 border-sunset-gold/40 text-horizon-cream hover:from-sunset-amber/45 hover:to-sunset-gold/40'
+                  : 'bg-gradient-to-r from-sunset-peach/50 to-sunset-gold/30 border-sunset-coral/40 text-twilight-navy hover:from-sunset-peach/60 hover:to-sunset-gold/40'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
@@ -175,8 +175,8 @@ export const QueryInput: React.FC = () => {
             flex items-center justify-center gap-3
             transition-all duration-300 shadow-lg backdrop-blur-md
             ${isDarkMode
-              ? 'bg-gradient-to-r from-primary via-secondary to-primary-light text-navy-deep hover:shadow-[0_0_30px_rgba(193,143,50,0.4)]'
-              : 'bg-gradient-to-r from-primary-dark via-primary to-secondary-dark text-white hover:shadow-[0_0_25px_rgba(193,143,50,0.3)]'
+              ? 'bg-gradient-to-r from-sunset-coral via-sunset-gold to-sunset-amber text-twilight-navy hover:shadow-[0_0_35px_rgba(255,157,92,0.5)]'
+              : 'bg-gradient-to-r from-sunset-amber via-sunset-gold to-sunset-peach text-twilight-navy hover:shadow-[0_0_30px_rgba(255,184,77,0.4)]'
             }
             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
           `}

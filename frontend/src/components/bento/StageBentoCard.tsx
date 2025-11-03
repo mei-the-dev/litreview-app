@@ -31,13 +31,13 @@ const STAGE_ICONS = [
 ];
 
 const STAGE_COLORS = [
-  'from-primary/20 via-secondary/15 to-primary-light/10',
-  'from-purple-400/20 via-secondary-light/15 to-purple-500/10',
-  'from-pink-400/20 via-secondary/15 to-pink-500/10',
-  'from-orange-400/20 via-secondary-light/15 to-warning/10',
-  'from-success/20 via-secondary/15 to-success/10',
-  'from-info/20 via-secondary-light/15 to-info/10',
-  'from-primary/25 via-secondary-dark/20 to-primary-light/15',
+  'from-sunset-gold/25 via-sunset-peach/20 to-sunset-amber/15',
+  'from-sunset-coral/25 via-sunset-rose/20 to-sunset-violet/15',
+  'from-sunset-rose/25 via-sunset-peach/20 to-sunset-gold/15',
+  'from-sunset-amber/25 via-primary/20 to-sunset-gold/15',
+  'from-success/20 via-sunset-peach/15 to-success/10',
+  'from-sunset-violet/20 via-sunset-rose/15 to-info/10',
+  'from-primary/30 via-sunset-gold/25 to-sunset-amber/20',
 ];
 
 export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark }) => {
@@ -134,8 +134,8 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
             className={`
               p-3 rounded-2xl backdrop-blur-md transition-all duration-500
               ${isDark 
-                ? 'bg-gradient-to-br from-primary/40 via-secondary/30 to-primary-light/35 shadow-[0_0_20px_rgba(193,143,50,0.3)]' 
-                : 'bg-gradient-to-br from-primary/30 via-secondary/40 to-primary-light/25 shadow-[0_0_15px_rgba(193,143,50,0.2)]'
+                ? 'bg-gradient-to-br from-sunset-amber/50 via-primary/40 to-sunset-gold/45 shadow-[0_0_25px_rgba(255,157,92,0.4)]' 
+                : 'bg-gradient-to-br from-sunset-gold/40 via-sunset-peach/50 to-sunset-amber/35 shadow-[0_0_20px_rgba(255,184,77,0.3)]'
               }
               ${isActive ? 'opacity-100 scale-105' : 'opacity-70 scale-100'}
               ${stage.status === 'running' ? 'animate-pulse-glow' : ''}
@@ -143,7 +143,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           >
             <Icon 
               className={`w-6 h-6 transition-colors duration-300 ${
-                isDark ? 'text-secondary-light drop-shadow-[0_0_8px_rgba(244,231,195,0.5)]' : 'text-primary-dark'
+                isDark ? 'text-horizon-cream drop-shadow-[0_0_10px_rgba(255,239,213,0.6)]' : 'text-twilight-navy drop-shadow-sm'
               }`} 
             />
           </div>
@@ -170,8 +170,8 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
           <p 
             className={`text-2xl font-bold mb-2 bg-gradient-to-r ${
               isDark 
-                ? 'from-white via-secondary-light to-primary-light text-golden-glow' 
-                : 'from-gray-900 via-primary to-primary-dark'
+                ? 'from-horizon-cream via-sunset-peach to-sunset-gold text-golden-glow' 
+                : 'from-twilight-navy via-primary to-sunset-amber'
             } bg-clip-text text-transparent transition-all duration-500`}
           >
             {stage.name}
@@ -192,7 +192,7 @@ export const StageBentoCard: React.FC<StageBentoCardProps> = ({ stage, isDark })
               isDark ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-secondary/20'
             }`}>
               <motion.div
-                className="h-full bg-gradient-to-r from-primary via-secondary to-primary-light shadow-[0_0_10px_rgba(193,143,50,0.5)]"
+                className="h-full bg-gradient-to-r from-sunset-coral via-sunset-gold to-sunset-amber shadow-[0_0_15px_rgba(255,157,92,0.6)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${stage.progress}%` }}
                 transition={{ duration: 0.5, ease: "easeOut" }}

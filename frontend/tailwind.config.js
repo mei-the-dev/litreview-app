@@ -15,7 +15,7 @@ export default {
         
         // Secondary light pastel gold
         secondary: '#F4E7C3',
-        'secondary-light': '#FAF3DC',
+        'secondary-light': '#FEF6E4',
         'secondary-dark': '#E8D9A8',
         'secondary-glow': 'rgba(244, 231, 195, 0.4)',
         
@@ -24,10 +24,21 @@ export default {
         'accent-muted': '#FAF3E0',
         
         // Dark theme colors with artistic depth
-        'navy-deep': '#0F1419',
-        'navy-medium': '#1A1F3A',
-        'navy-light': '#252B48',
+        'navy-deep': '#1A1F3A',
+        'navy-medium': '#252B48',
+        'navy-light': '#3D3066',
         'midnight': '#0A0E1A',
+        
+        // Sunset palette
+        'sunset-amber': '#FF9D5C',
+        'sunset-gold': '#FFB84D',
+        'sunset-peach': '#FFCF9F',
+        'sunset-coral': '#FF8A5B',
+        'sunset-rose': '#F4A5B9',
+        'sunset-violet': '#A17FB5',
+        'twilight-indigo': '#6B5B95',
+        'twilight-navy': '#3D3066',
+        'horizon-cream': '#FFEFD5',
         
         'gray-warm': '#4A4A4A',
         'gray-dark': '#2C2C2C',

@@ -26,9 +26,9 @@ export const Header: React.FC = () => {
           <h1 
             className={`text-5xl font-bold mb-2 bg-gradient-to-r ${
               isDarkMode
-                ? 'from-primary-light via-secondary-light to-primary text-golden-glow'
-                : 'from-primary-dark via-primary to-secondary-dark'
-            } bg-clip-text text-transparent`}
+                ? 'from-sunset-gold via-horizon-cream to-sunset-amber text-golden-glow'
+                : 'from-twilight-navy via-sunset-coral to-sunset-amber'
+            } bg-clip-text text-transparent drop-shadow-lg`}
           >
             LitReview
           </h1>
@@ -87,8 +87,8 @@ export const Header: React.FC = () => {
             className={`
               p-4 rounded-2xl backdrop-blur-md border transition-all
               ${isDarkMode
-                ? 'bg-gradient-to-br from-primary/30 to-secondary/25 border-primary/40 text-secondary-light hover:from-primary/40 hover:to-secondary/35'
-                : 'bg-gradient-to-br from-secondary/40 to-white/80 border-secondary/50 text-primary-dark hover:from-secondary/50 hover:to-white'
+                ? 'bg-gradient-to-br from-sunset-amber/30 to-sunset-gold/25 border-sunset-gold/40 text-horizon-cream hover:from-sunset-amber/40 hover:to-sunset-gold/35 shadow-[0_0_15px_rgba(255,184,77,0.3)]'
+                : 'bg-gradient-to-br from-sunset-peach/50 to-horizon-cream/80 border-sunset-gold/50 text-twilight-navy hover:from-sunset-peach/60 hover:to-horizon-cream shadow-[0_0_10px_rgba(255,207,159,0.4)]'
               }
             `}
           >

@@ -26,77 +26,107 @@ function App() {
       className={`
         min-h-screen p-4 sm:p-8 relative overflow-hidden transition-all duration-700
         ${isDarkMode
-          ? 'bg-gradient-to-br from-midnight via-navy-deep to-navy-medium'
-          : 'bg-gradient-to-br from-secondary-light via-white to-accent-muted'
+          ? 'bg-gradient-to-b from-twilight-navy via-twilight-indigo/30 to-midnight'
+          : 'bg-gradient-to-b from-horizon-cream via-sunset-peach/20 to-secondary-light'
         }
       `}
+      style={{
+        backgroundImage: isDarkMode 
+          ? 'linear-gradient(180deg, #3D3066 0%, rgba(107, 91, 149, 0.3) 30%, rgba(26, 31, 58, 0.8) 70%, #0A0E1A 100%)'
+          : 'linear-gradient(180deg, #FFEFD5 0%, rgba(255, 207, 159, 0.4) 20%, rgba(255, 184, 77, 0.2) 50%, rgba(244, 231, 195, 0.3) 80%, #FEF6E4 100%)'
+      }}
     >
-      {/* Artistic animated background with glassmorphism-enhancing layers */}
+      {/* Sunset-inspired animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Primary artistic blob - golden */}
+        {/* Sun/Moon glow at horizon */}
         <div 
           className={`
-            absolute top-[-10%] left-[-5%] w-[50%] h-[50%] rounded-full
-            filter blur-3xl
-            animate-blob
+            absolute ${isDarkMode ? 'top-[15%]' : 'top-[10%]'} left-1/2 transform -translate-x-1/2
+            w-[300px] h-[300px] rounded-full
+            filter blur-[100px]
+            animate-horizon-glow
             ${isDarkMode 
-              ? 'bg-gradient-to-br from-primary/30 via-primary-light/20 to-primary-dark/25 opacity-80' 
-              : 'bg-gradient-to-br from-primary/20 via-secondary/30 to-primary-light/15 opacity-60'
+              ? 'bg-gradient-radial from-primary/40 via-sunset-amber/20 to-transparent' 
+              : 'bg-gradient-radial from-sunset-gold/60 via-sunset-amber/40 to-transparent'
             }
           `}
-          style={{ mixBlendMode: isDarkMode ? 'screen' : 'multiply' }}
         />
         
-        {/* Secondary artistic blob - pastel gold with purple hints */}
+        {/* Warm sunset layer - left side */}
         <div 
           className={`
-            absolute top-[10%] right-[-10%] w-[45%] h-[60%] rounded-full
-            filter blur-3xl
-            animate-blob animation-delay-2000
+            absolute top-[5%] left-[-10%] w-[45%] h-[50%] rounded-full
+            filter blur-[120px]
+            animate-sunset-shimmer
             ${isDarkMode 
-              ? 'bg-gradient-to-bl from-secondary/25 via-purple-500/20 to-primary/30 opacity-70' 
-              : 'bg-gradient-to-bl from-secondary-light/40 via-purple-200/30 to-primary/10 opacity-50'
+              ? 'bg-gradient-to-br from-sunset-coral/25 via-sunset-amber/20 to-primary/30 opacity-60' 
+              : 'bg-gradient-to-br from-sunset-coral/40 via-sunset-amber/35 to-sunset-gold/30 opacity-70'
             }
           `}
-          style={{ mixBlendMode: isDarkMode ? 'screen' : 'multiply' }}
+          style={{ mixBlendMode: 'screen' }}
         />
         
-        {/* Tertiary artistic blob - warm accent */}
+        {/* Golden hour glow - right side */}
         <div 
           className={`
-            absolute bottom-[-5%] left-[20%] w-[55%] h-[45%] rounded-full
-            filter blur-3xl
-            animate-blob animation-delay-4000
+            absolute top-[10%] right-[-8%] w-[50%] h-[55%] rounded-full
+            filter blur-[110px]
+            animate-sunset-shimmer animation-delay-2000
             ${isDarkMode 
-              ? 'bg-gradient-to-tr from-orange-400/20 via-primary-light/25 to-secondary/20 opacity-75' 
-              : 'bg-gradient-to-tr from-orange-200/25 via-secondary/35 to-accent/30 opacity-45'
+              ? 'bg-gradient-to-bl from-primary/30 via-sunset-rose/15 to-sunset-violet/25 opacity-50' 
+              : 'bg-gradient-to-bl from-sunset-peach/50 via-sunset-rose/30 to-primary-light/25 opacity-65'
             }
           `}
-          style={{ mixBlendMode: isDarkMode ? 'screen' : 'multiply' }}
+          style={{ mixBlendMode: 'screen' }}
         />
         
-        {/* Additional depth layer - subtle grid pattern */}
+        {/* Horizon reflection - bottom glow */}
         <div 
           className={`
-            absolute inset-0 opacity-[0.02]
-            ${isDarkMode ? 'bg-white' : 'bg-primary'}
+            absolute bottom-[-15%] left-[15%] w-[70%] h-[40%] rounded-full
+            filter blur-[100px]
+            animate-sunset-shimmer animation-delay-4000
+            ${isDarkMode 
+              ? 'bg-gradient-to-t from-sunset-violet/20 via-primary-dark/25 to-transparent opacity-40' 
+              : 'bg-gradient-to-t from-primary/30 via-sunset-amber/25 to-sunset-peach/20 opacity-55'
+            }
+          `}
+          style={{ mixBlendMode: 'screen' }}
+        />
+        
+        {/* Twilight purple accent - dark mode emphasis */}
+        {isDarkMode && (
+          <div 
+            className="
+              absolute top-[40%] right-[10%] w-[35%] h-[45%] rounded-full
+              filter blur-[90px]
+              animate-blob animation-delay-2000
+              bg-gradient-to-bl from-sunset-violet/30 via-twilight-indigo/20 to-sunset-rose/15 opacity-40
+            "
+            style={{ mixBlendMode: 'screen' }}
+          />
+        )}
+        
+        {/* Subtle cloud-like wisps */}
+        <div 
+          className={`
+            absolute inset-0 opacity-[0.03]
+            ${isDarkMode ? 'bg-white' : 'bg-sunset-amber'}
           `}
           style={{
-            backgroundImage: `
-              linear-gradient(${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(193,143,50,0.05)'} 1px, transparent 1px),
-              linear-gradient(90deg, ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(193,143,50,0.05)'} 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
+            backgroundImage: `radial-gradient(circle at 20% 30%, ${isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 157, 92, 0.08)'} 0%, transparent 50%),
+                             radial-gradient(circle at 80% 60%, ${isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 184, 77, 0.06)'} 0%, transparent 50%),
+                             radial-gradient(circle at 40% 80%, ${isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 207, 159, 0.04)'} 0%, transparent 50%)`
           }}
         />
         
-        {/* Radial gradient overlay for depth */}
+        {/* Atmospheric depth gradient */}
         <div 
           className={`
             absolute inset-0
             ${isDarkMode
-              ? 'bg-radial-gradient from-transparent via-navy-deep/30 to-midnight/60'
-              : 'bg-radial-gradient from-white/40 via-transparent to-secondary/20'
+              ? 'bg-gradient-to-b from-transparent via-navy-deep/20 to-midnight/40'
+              : 'bg-gradient-to-b from-white/30 via-transparent to-secondary-light/40'
             }
           `}
         />
